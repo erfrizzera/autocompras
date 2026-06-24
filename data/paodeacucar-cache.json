@@ -1,0 +1,37 @@
+{
+  "Arroz Branco Tio João 1kg": null,
+  "Café Torrado e Moído Pilão Tradicional 500g": {
+    "name": "Café Torrado e Moído Tradicional Pilão Pacote 500g",
+    "link": "https://www.paodeacucar.com/produto/152052/cafe-torrado-e-moido-tradicional-pilao-pacote-500g",
+    "price": 25.99,
+    "image": "https://static.paodeacucar.com/img/uploads/1/403/33028403.png?im=Resize,width=200",
+    "fetchedAt": "2026-06-24T01:11:53.896Z"
+  },
+  "Peito de Peru Defumado Sadia 100g": {
+    "name": "Patê de Peito de Peru Defumado Sadia 100g",
+    "link": "https://www.paodeacucar.com/produto/119902/pate-de-peito-de-peru-defumado-sadia-100g",
+    "price": 5.39,
+    "image": "https://static.paodeacucar.com/img/uploads/1/492/33061492.png?im=Resize,width=200",
+    "fetchedAt": "2026-06-24T01:17:27.022Z"
+  },
+  "Néctar Misto Sem Adição de Açúcar Del Valle Uva Tetra Pak 1 L": null,
+  "Papel Higiênico Neve Folha Dupla Toque de Seda com 12 Unidades": null,
+  "Amaciante Para Roupas Amacitel 2L": null,
+  "Saco de Lixo Bye Bye 50L": null,
+  "Vinho Tinto Argentino Argento Malbec Garrafa 750ml": null,
+  "Iogurte morango garrafa 1,25kg": {
+    "name": "Iogurte Parcialmente Desnatado Morango Danone Garrafa 1,25kg Embalagem Supereconômica",
+    "link": "https://www.paodeacucar.com/produto/655414/iogurte-parcialmente-desnatado-morango-danone-garrafa-1,25kg-embalagem-supereconomica",
+    "price": 20.99,
+    "image": "https://static.paodeacucar.com/img/uploads/1/416/33076416.png?im=Resize,width=200",
+    "fetchedAt": "2026-06-24T01:32:15.606Z"
+  },
+  "Coxinha da Asa Korin 600g": null,
+  "Arroz": {
+    "name": "Arroz Agulhinha Tipo 1 CAMIL Pacote 5kg",
+    "link": "https://www.paodeacucar.com/produto/41329/arroz-agulhinha-tipo-1-camil-pacote-5kg",
+    "price": 25.99,
+    "image": "https://static.paodeacucar.com/img/uploads/1/224/33031224.jpg?im=Resize,width=200",
+    "fetchedAt": "2026-06-24T02:14:40.081Z"
+  }
+}

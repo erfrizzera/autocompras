@@ -488,7 +488,7 @@ function clampQty(value) {
   return Math.max(1, Math.min(qty, 24));
 }
 
-function getTargetForRequestedItem(item) {
+export function getTargetForRequestedItem(item) {
   const target = targets.find((candidate) => candidate.key === item.key);
 
   if (target) {

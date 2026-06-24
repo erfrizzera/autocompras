@@ -72,6 +72,9 @@
               <p id="cartSummary">Sem consulta</p>
             </div>
             <div class="panel-actions">
+              <button class="secondary-button" id="openPaoButton" type="button" style="display: none;">
+                Comparar P.Açúcar
+              </button>
               <button class="secondary-button" id="backToListButton" type="button">
                 Voltar
               </button>
@@ -124,6 +127,19 @@
           </div>
         </section>
       </main>
+    </div>
+
+    <!-- Pão de Açúcar modal popup -->
+    <div id="paoModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Comparação com Pão de Açúcar</h2>
+          <button class="close-button" id="closePaoModal" type="button" aria-label="Fechar popup">&times;</button>
+        </div>
+        <div id="paoModalBody" class="modal-body">
+          <!-- Content injected dynamically -->
+        </div>
+      </div>
     </div>
 
     <script src="/app.js?v=v16" type="module"></script>

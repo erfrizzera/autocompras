@@ -13,6 +13,8 @@ const state = {
   plan: null,
   quoteDirty: false,
   buyCartOverrides: new Map(),
+  paoPlan: null,
+  paoLoading: false,
   collapsedSections: new Set([
     "listSegment:recent",
     "listSegment:perishable",
@@ -56,6 +58,17 @@ elements.goToBuyButton.addEventListener("click", () => {
   setPhase("buy");
 });
 elements.backToReviewButton.addEventListener("click", () => setPhase("review"));
+document.querySelector("#openPaoButton").addEventListener("click", () => {
+  if (state.paoPlan) renderPaoPopup(state.paoPlan);
+});
+document.querySelector("#closePaoModal").addEventListener("click", () => {
+  document.querySelector("#paoModal").style.display = "none";
+});
+document.querySelector("#paoModal").addEventListener("click", (event) => {
+  if (event.target.id === "paoModal") {
+    document.querySelector("#paoModal").style.display = "none";
+  }
+});
 elements.addProductForm.addEventListener("submit", (event) => {
   event.preventDefault();
   addProductByLink();
@@ -456,6 +469,7 @@ async function quotePrices() {
     renderPlan(plan);
     renderBuyPhase(plan);
     elements.goToBuyButton.disabled = false;
+    fetchPaoDeAcucarComparison(plan);
   } catch (error) {
     setStatus("Erro", "error");
     renderError(error.message);
@@ -1604,4 +1618,180 @@ function extractSlug(urlStr) {
   } catch (e) {
     return "";
   }
+}
+
+async function fetchPaoDeAcucarComparison(plan) {
+  const openPaoButton = document.querySelector("#openPaoButton");
+  if (!openPaoButton) return;
+
+  state.paoPlan = null;
+  state.paoLoading = true;
+  openPaoButton.style.display = "inline-flex";
+  openPaoButton.disabled = true;
+  openPaoButton.textContent = "Comparando P.Açúcar...";
+
+  try {
+    const response = await fetch("/api/paodeacucar/plan", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        items: plan.items.map((item) => ({
+          key: item.key,
+          label: item.label,
+          qty: item.qty,
+          referencePrice: item.referencePrice,
+          selected: item.selected ? {
+            name: item.selected.name,
+            total: item.selected.total,
+            brand: item.selected.brand,
+            metricLabel: item.selected.metricLabel
+          } : null
+        }))
+      })
+    });
+
+    const result = await response.json();
+    
+    if (result.disabled) {
+      console.log("Pão de Açúcar comparison disabled on this environment:", result.reason);
+      openPaoButton.style.display = "none";
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(result.error || "Erro na cotação do Pão de Açúcar");
+    }
+
+    // Merge Pão de Açúcar results back into a combined plan object
+    const combinedPlan = {
+      items: plan.items.map(item => {
+        const paoItem = result.items.find(pi => pi.key === item.key);
+        return {
+          ...item,
+          paoDeAcucar: paoItem ? paoItem.paoDeAcucar : null
+        };
+      }),
+      paoDeAcucar: result.paoDeAcucar
+    };
+
+    state.paoPlan = combinedPlan;
+    openPaoButton.disabled = false;
+    openPaoButton.textContent = "Comparar P.Açúcar";
+
+    // Auto open the popup modal when completed
+    renderPaoPopup(combinedPlan);
+
+  } catch (error) {
+    console.error("Erro na comparação paralela com Pão de Açúcar:", error);
+    openPaoButton.textContent = "Erro P.Açúcar";
+    setTimeout(() => {
+      openPaoButton.style.display = "none";
+    }, 3000);
+  } finally {
+    state.paoLoading = false;
+  }
+}
+
+function renderPaoPopup(plan) {
+  const pao = plan.paoDeAcucar;
+  const modal = document.querySelector("#paoModal");
+  const modalBody = document.querySelector("#paoModalBody");
+  const openPaoButton = document.querySelector("#openPaoButton");
+
+  if (!pao || pao.matchedCount === 0) {
+    if (openPaoButton) openPaoButton.style.display = "none";
+    if (modal) modal.style.display = "none";
+    return;
+  }
+
+  if (openPaoButton) openPaoButton.style.display = "inline-flex";
+
+  const diffSign = pao.diff >= 0 ? "+" : "";
+  const diffClass = pao.diff <= 0 ? "good" : "bad";
+
+  let itemsHtml = "";
+  const selectedItems = plan.items.filter((item) => item.selected);
+
+  selectedItems.forEach((item) => {
+    let itemComparisonHtml = "";
+    if (item.paoDeAcucar) {
+      const paoTotal = item.paoDeAcucar.total;
+      const priceDiff = paoTotal - item.selected.total;
+      const itemDiffClass = priceDiff <= 0 ? "good" : "bad";
+      const itemDiffSign = priceDiff > 0 ? "+" : "";
+      
+      const zsUnitPrice = item.selected.price || (item.selected.total / item.qty);
+      const paoUnitPrice = item.paoDeAcucar.price;
+
+      itemComparisonHtml = `
+        <div class="pao-popup-item-comparison">
+          <div class="comparison-column zs">
+            <span class="comp-label">Zona Sul</span>
+            <strong class="comp-price">${currency.format(item.selected.total)}</strong>
+            ${item.qty > 1 ? `<small class="comp-unit">${currency.format(zsUnitPrice)}/un</small>` : ""}
+          </div>
+          <div class="comparison-column pa">
+            <span class="comp-label">P.Açúcar</span>
+            <strong class="comp-price">${currency.format(paoTotal)}</strong>
+            ${item.qty > 1 ? `<small class="comp-unit">${currency.format(paoUnitPrice)}/un</small>` : ""}
+          </div>
+          <div class="comparison-column diff">
+            <span class="comp-label">Diferença</span>
+            <strong class="comp-diff ${itemDiffClass}">${itemDiffSign}${currency.format(priceDiff)}</strong>
+            <a class="pao-popup-link" href="${escapeAttribute(item.paoDeAcucar.link)}" target="_blank" rel="noreferrer">Ver link</a>
+          </div>
+        </div>
+      `;
+    } else {
+      itemComparisonHtml = `
+        <div class="pao-popup-item-comparison">
+          <div class="comparison-column zs">
+            <span class="comp-label">Zona Sul</span>
+            <strong class="comp-price">${currency.format(item.selected.total)}</strong>
+          </div>
+          <div class="comparison-column pa missing">
+            <span class="comp-label">P.Açúcar</span>
+            <span class="pao-popup-missing">Não encontrado</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const hasDifferentName = item.paoDeAcucar && item.paoDeAcucar.name && item.paoDeAcucar.name.trim() !== item.selected.name.trim();
+
+    itemsHtml += `
+      <div class="pao-popup-item ${item.paoDeAcucar ? "" : "state-missing"}">
+        <div class="pao-popup-item-info">
+          <strong>${escapeHtml(item.selected.name)}</strong>
+          ${hasDifferentName ? `
+            <div class="pao-popup-matched-name" title="Nome do produto encontrado no Pão de Açúcar">
+              PA: <em>${escapeHtml(item.paoDeAcucar.name)}</em>
+            </div>
+          ` : ""}
+          <span class="pao-popup-brand-metric">Qtd: ${item.qty} | Marca: ${escapeHtml(item.selected.brand || "Marca")} | ${escapeHtml(item.selected.metricLabel)}</span>
+        </div>
+        ${itemComparisonHtml}
+      </div>
+    `;
+  });
+
+  modalBody.innerHTML = `
+    <div class="pao-popup-metrics">
+      <div class="pao-popup-metric">
+        <span>Subtotal Pão de Açúcar</span>
+        <strong>${currency.format(pao.subtotal)}</strong>
+        <small>${pao.matchedCount}/${pao.totalCount} itens encontrados</small>
+      </div>
+      <div class="pao-popup-metric">
+        <span>Diferença Geral</span>
+        <strong class="pao-popup-diff ${diffClass}">${diffSign}${currency.format(pao.diff)}</strong>
+        <small>ZS (${currency.format(pao.compareSubtotal)})</small>
+      </div>
+    </div>
+    <div class="pao-popup-list">
+      ${itemsHtml}
+    </div>
+  `;
+
+  modal.style.display = "flex";
 }

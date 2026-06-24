@@ -9,7 +9,13 @@ import {
   planCart,
   resolveProductFromUrl,
   targetSummaries,
+  getTargetForRequestedItem,
 } from "./src/zonasulCatalog.mjs";
+import {
+  readPaoDeAcucarCache,
+  writePaoDeAcucarCache,
+  scrapePaoDeAcucar,
+} from "./src/paodeacucarScraper.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const publicDir = join(__dirname, "public");
@@ -97,6 +103,12 @@ export function createAppServer() {
         const body = await readJson(request);
         const plan = await planCart(body.items || defaultItems());
         return sendJson(response, plan);
+      }
+
+      if (url.pathname === "/api/paodeacucar/plan" && request.method === "POST") {
+        const body = await readJson(request);
+        const paoPlan = await planPaoDeAcucar(body.items || []);
+        return sendJson(response, paoPlan);
       }
 
       if (url.pathname === "/api/historical-items/remove" && request.method === "POST") {
@@ -292,4 +304,103 @@ function sendText(response, text, status = 200) {
 
 function isMainModule() {
   return process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+}
+
+async function planPaoDeAcucar(planItems) {
+  // 1. Gather active search queries for Pão de Açúcar cotação
+  const queries = planItems
+    .filter((item) => item.qty > 0 && item.selected)
+    .map((item) => {
+      const target = getTargetForRequestedItem(item);
+      return {
+        key: item.key,
+        query: target ? target.queries[0] : (item.query || item.label),
+        qty: item.qty,
+        selectedTotal: item.selected.total,
+      };
+    })
+    .filter((x) => x.query);
+
+  // 2. Read and validate Pão de Açúcar cache
+  let paoCache = {};
+  try {
+    paoCache = await readPaoDeAcucarCache();
+  } catch (e) {
+    console.error("Erro ao ler cache do Pão de Açúcar:", e);
+  }
+
+  const now = new Date();
+  const queriesToScrape = [];
+  
+  for (const q of queries) {
+    const cached = paoCache[q.query];
+    const isExpired = cached && (now - new Date(cached.fetchedAt) > 24 * 60 * 60 * 1000); // 24 hours
+    if (!cached || isExpired) {
+      queriesToScrape.push(q.query);
+    }
+  }
+
+  // 3. Scrape missing queries
+  if (queriesToScrape.length > 0) {
+    try {
+      const newScrapes = await scrapePaoDeAcucar(queriesToScrape);
+      for (const query of queriesToScrape) {
+        if (newScrapes[query] !== undefined) {
+          paoCache[query] = newScrapes[query];
+        }
+      }
+      await writePaoDeAcucarCache(paoCache);
+    } catch (e) {
+      console.error("Erro no scrape do Pão de Açúcar:", e);
+    }
+  }
+
+  // 4. Build output list
+  const items = planItems.map((item) => {
+    if (!item.selected || !item.qty) {
+      return { key: item.key, paoDeAcucar: null };
+    }
+    const target = getTargetForRequestedItem(item);
+    const query = target ? target.queries[0] : (item.query || item.label);
+    const cachedResult = paoCache[query];
+    let paoDeAcucar = null;
+
+    if (cachedResult && cachedResult.price != null) {
+      paoDeAcucar = {
+        name: cachedResult.name,
+        price: cachedResult.price,
+        total: cachedResult.price * item.qty,
+        image: cachedResult.image,
+        link: cachedResult.link,
+      };
+    }
+    return {
+      key: item.key,
+      paoDeAcucar,
+    };
+  });
+
+  // Calculate competitor statistics
+  const paoDeAcucarEntries = items.filter((e) => e.paoDeAcucar);
+  const paoDeAcucarSubtotal = paoDeAcucarEntries.reduce((sum, e) => sum + e.paoDeAcucar.total, 0);
+  
+  // To compare basket-to-basket, find the corresponding ZS totals
+  const compareSubtotal = paoDeAcucarEntries.reduce((sum, e) => {
+    const zsItem = planItems.find((item) => item.key === e.key);
+    return sum + (zsItem && zsItem.selected ? zsItem.selected.total : 0);
+  }, 0);
+
+  const matchedCount = paoDeAcucarEntries.length;
+  const totalCount = planItems.filter((item) => item.selected).length;
+
+  return {
+    items,
+    paoDeAcucar: {
+      subtotal: paoDeAcucarSubtotal,
+      compareSubtotal: compareSubtotal,
+      diff: paoDeAcucarSubtotal - compareSubtotal,
+      matchedCount,
+      totalCount,
+    },
+  };
 }

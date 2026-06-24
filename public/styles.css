@@ -1392,3 +1392,283 @@ button {
 h1, h2, .buy-card > strong {
   font-family: 'PT Serif', serif !important;
 }
+
+/* Modal overlay styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 48, 64, 0.4);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 16px;
+  animation: fadeInModal 0.25s ease-out;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: var(--surface);
+  border-radius: 12px;
+  width: min(680px, 100%);
+  max-height: 85vh;
+  box-shadow: 0 20px 48px rgba(0, 48, 64, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--line-strong);
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(20px) scale(0.98); }
+  to { transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  font-family: 'PT Serif', serif !important;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.close-button:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Pão de Açúcar popup metrics */
+.pao-popup-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pao-popup-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pao-popup-metric span {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+
+.pao-popup-metric strong {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.pao-popup-metric strong.good {
+  color: var(--green);
+}
+
+.pao-popup-metric strong.bad {
+  color: var(--red);
+}
+
+.pao-popup-metric small {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* Pão de Açúcar popup list of items */
+.pao-popup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pao-popup-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.pao-popup-item:hover {
+  border-color: var(--line-strong);
+}
+
+.pao-popup-item.state-missing {
+  background: #fdfdfd;
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.pao-popup-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pao-popup-item-info strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pao-popup-matched-name {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px dashed var(--line);
+}
+
+.pao-popup-brand-metric {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.pao-popup-item-comparison {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.comparison-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.comparison-column.diff {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.comp-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.comp-price {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.comp-unit {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.comp-diff {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.comp-diff.good {
+  color: var(--green);
+}
+
+.comp-diff.bad {
+  color: var(--red);
+}
+
+.pao-popup-link {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--green);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.pao-popup-link:hover {
+  color: var(--green-strong);
+  border-color: var(--green-strong);
+}
+
+.pao-popup-missing {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+@media (max-width: 520px) {
+  .pao-popup-metrics {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .pao-popup-item-comparison {
+    flex-direction: row;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .comp-price {
+    font-size: 12px;
+  }
+  .comp-diff {
+    font-size: 11px;
+  }
+}
