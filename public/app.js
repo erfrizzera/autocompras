@@ -86,6 +86,8 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+
+
   const phaseButton = event.target.closest("[data-go-phase]");
   if (phaseButton) {
     const nextPhase = phaseButton.dataset.goPhase;
@@ -107,10 +109,11 @@ async function loadIntents() {
     const response = await fetch("/api/intents");
     const data = await response.json();
 
-    elements.loginLink.href = data.loginUrl || "https://www.zonasul.com.br/login";
-    if (data.spreadsheetUrl) {
+    if (elements.loginLink) {
+      elements.loginLink.href = data.loginUrl || "https://www.zonasul.com.br/login";
+    }
+    if (elements.spreadsheetLink && data.spreadsheetUrl) {
       elements.spreadsheetLink.href = data.spreadsheetUrl;
-      elements.spreadsheetLink.style.display = "inline-block";
     }
     state.items = data.defaults.map((item) => ({
       id: item.key,
@@ -845,6 +848,11 @@ function renderComparisonRows(rows) {
 }
 
 function renderPersonalOffers(offers) {
+  if (state.phase === "buy") {
+    clearPersonalOffers();
+    return;
+  }
+
   if (!offers?.selected?.length) {
     clearPersonalOffers();
     return;
@@ -855,6 +863,18 @@ function renderPersonalOffers(offers) {
       ? `${offers.perAccountLimit}+${offers.perAccountLimit}`
       : `${offers.limit}`;
 
+  const offersListHtml = (offers.selected || []).map((item, index) => {
+    return `
+      <li style="display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 10px; align-items: center; color: var(--muted); font-size: 13px; margin-bottom: 6px; padding: 6px 0; border-top: 1px dashed var(--line);">
+        <div class="offer-thumb" style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 6px; background: #ffffff; overflow: hidden;">
+          ${item.image ? `<img src="${escapeAttribute(formatProductImage(item.image))}" alt="" loading="lazy" style="display: block; width: 36px; height: 36px; object-fit: contain;" />` : ""}
+        </div>
+        <span style="overflow-wrap: anywhere;">${index + 1}. ${escapeHtml(item.label)} <small style="display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 700;">qtd. ${item.qty} | site ${formatPercent(item.currentDiscountPercent)}%</small></span>
+        <strong style="display: grid; gap: 2px; justify-items: end; color: var(--green); white-space: nowrap;">${currency.format(item.total)}<small style="color: var(--muted); font-size: 11px;">pot. ${currency.format(item.estimatedSavings || 0)}</small></strong>
+      </li>
+    `;
+  }).join("");
+
   elements.personalOffers.hidden = false;
   elements.personalOffers.innerHTML = `
     ${renderCollapsibleSection({
@@ -862,9 +882,9 @@ function renderPersonalOffers(offers) {
       title: "Minhas Ofertas",
       meta: `${offers.selectedCount}/${offers.limit} slots (${slotLabel}) | corte ${formatPercent(offers.cutoffPercent || 15)}% | ${offers.eligibleCount} elegiveis | pot. ${currency.format(offers.estimatedSavings || 0)}`,
       body: `
-        <div class="offer-accounts">
-          ${(offers.accounts || []).map((account) => renderOfferAccount(account)).join("")}
-        </div>
+        <ol class="offers-list" style="margin: 0; padding: 0; list-style: none;">
+          ${offersListHtml}
+        </ol>
       `,
     })}
   `;
@@ -1007,7 +1027,35 @@ function renderBuyPhase(plan) {
 
 function buildTwoPurchaseCarts(plan) {
   const accounts = plan.personalOffers?.accounts || [];
-  const offerSkus = new Set((plan.personalOffers?.selected || []).map((item) => item.sku));
+  const selectedOffers = plan.personalOffers?.selected || [];
+
+  const ericoOffers = [];
+  const daniOffers = [];
+
+  for (const offer of selectedOffers) {
+    const key = cartItemKey(offer.sku, offer.label);
+    const targetAccount = state.buyCartOverrides.has(key) ? state.buyCartOverrides.get(key) : offer.accountKey;
+
+    const offerItem = {
+      label: offer.label,
+      sku: offer.sku,
+      sellerId: offer.sellerId,
+      qty: offer.qty,
+      total: Number(offer.total || 0),
+      key: key,
+      logistics: "offer",
+      movable: true,
+      estimatedSavings: Number(offer.estimatedSavings || 0)
+    };
+
+    if (targetAccount === "erico") {
+      ericoOffers.push(offerItem);
+    } else {
+      daniOffers.push(offerItem);
+    }
+  }
+
+  const offerSkus = new Set(selectedOffers.map((item) => item.sku));
   const outsideItems = plan.items
     .filter((item) => item.selected && !offerSkus.has(item.selected.sku))
     .map((item) => ({
@@ -1023,20 +1071,12 @@ function buildTwoPurchaseCarts(plan) {
   const assignments = assignOutsideItems(outsideItems);
 
   return accounts.map((account) => {
-    const accountOffers = (account.selected || []).map((item) => ({
-      label: item.label,
-      sku: item.sku,
-      sellerId: item.sellerId,
-      qty: item.qty,
-      total: Number(item.total || 0),
-      key: cartItemKey(item.sku, item.label),
-      logistics: "offer",
-      movable: false,
-    }));
-    const assignedOutside = assignments[account.key] || [];
+    const accountKey = account.key;
+    const accountOffers = accountKey === "erico" ? ericoOffers : daniOffers;
+    const assignedOutside = assignments[accountKey] || [];
     const allItems = [...accountOffers, ...assignedOutside];
     const subtotal = allItems.reduce((sum, item) => sum + item.total, 0);
-    const savings = Number(account.estimatedSavings || 0);
+    const savings = accountOffers.reduce((sum, item) => sum + item.estimatedSavings, 0);
     const logisticsSummary = summarizeLogistics(assignedOutside);
 
     return {
@@ -1047,7 +1087,7 @@ function buildTwoPurchaseCarts(plan) {
       savings,
       url: buildCartUrl(allItems),
       disabled: !allItems.length,
-      accountKey: account.key,
+      accountKey: accountKey,
       items: allItems,
     };
   });
@@ -1152,6 +1192,7 @@ function logisticsLabel(logistics) {
   if (logistics === "cleaning") return "limpeza";
   if (logistics === "heavy") return "pesado";
   if (logistics === "perishable") return "perecivel";
+  if (logistics === "offer") return "Minhas Ofertas";
   return "geral";
 }
 
@@ -1191,21 +1232,38 @@ function renderBuyCard({
   const targetAccount = accountKey === "erico" ? "dani" : "erico";
   const targetLabel = accountKey === "erico" ? "Dani" : "Erico";
 
+  const offerCount = items.filter((item) => item.logistics === "offer").length;
+  const isOverLimit = offerCount > 10;
+  const warningHtml = isOverLimit
+    ? `<div class="warning-row" style="margin-bottom: 10px; background: #fff1ef; border: 1px solid #d8a39d; color: var(--red); padding: 8px 12px; border-radius: 6px; font-weight: 800; font-size: 13px;">
+         Atenção: Limite de 10 ofertas excedido (${offerCount} selecionadas). Mova algumas para a outra conta!
+       </div>`
+    : "";
+
   return `
     <article class="buy-card">
       <div>
-        <strong>${escapeHtml(title)}</strong>
+        <strong style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+          ${escapeHtml(title)}
+          ${renderActivationStatus(accountKey)}
+        </strong>
         <span>${escapeHtml(detail)}</span>
       </div>
+      ${warningHtml}
       <strong>${currency.format(Math.max(0, Number(totalAfterOffers ?? total ?? 0)))}</strong>
       <span class="buy-card-meta">${currency.format(Math.max(0, Number(total || 0)))} antes das ofertas | desc. ${currency.format(Number(savings || 0))}</span>
       <div class="buy-item-list">
         ${items.map((item) => renderBuyItem(item, targetAccount, targetLabel)).join("")}
       </div>
       <span class="buy-card-flow">Este botao presume que o Zona Sul ja esta na conta certa para ${escapeHtml(title.replace("Conta ", ""))}.</span>
-      <a class="cart-link ${disabled ? "disabled" : ""}" href="${escapeAttribute(url || "#")}" target="_blank" rel="noreferrer">
-        Montar carrinho - deslogue se precisar
-      </a>
+      <div style="display: flex; gap: 8px; width: 100%; margin-top: 12px;">
+        <button class="secondary-button" style="flex: 1; min-height: 48px; margin: 0;" type="button" disabled>
+          Montar Minhas Oferta
+        </button>
+        <a class="cart-link ${disabled ? "disabled" : ""}" href="${escapeAttribute(url || "#")}" data-account-key="${accountKey}" target="_blank" rel="noreferrer" style="flex: 1.5; margin: 0;">
+          Montar carrinho
+        </a>
+      </div>
     </article>
   `;
 }
@@ -1450,21 +1508,34 @@ function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
 }
 
-async function triggerCloudActivation(accountKey) {
-  if (!state.plan || !state.plan.personalOffers) return;
-  const accounts = state.plan.personalOffers.accounts || [];
-  const account = accounts.find((acc) => acc.key === accountKey);
-  if (!account || !account.selected || !account.selected.length) return;
-  
-  const skus = account.selected.map((item) => String(item.sku)).filter(Boolean);
-  
-  setStatus(`Ativando ${account.label}`, "busy");
-  const button = document.querySelector(`[data-activate-cloud="${accountKey}"]`);
-  if (button) {
-    button.disabled = true;
-    button.textContent = "Ativando...";
+async function runCloudActivationFlow(accountKey) {
+  if (!state.plan || !state.plan.personalOffers) return false;
+
+  const carts = buildTwoPurchaseCarts(state.plan);
+  const cart = carts.find((c) => c.accountKey === accountKey);
+  if (!cart) return false;
+
+  const skus = cart.items
+    .filter((item) => item.logistics === "offer")
+    .map((item) => String(item.sku))
+    .filter(Boolean);
+
+  const accountLabel = accountKey === "erico" ? "Erico" : "Dani";
+  setStatus(`Ativando ${accountLabel}`, "busy");
+
+  // Disable both the "Ativar na Nuvem" button and the "Montar Carrinho" button
+  const activateButton = document.querySelector(`[data-activate-cloud="${accountKey}"]`);
+  const cartLink = document.querySelector(`.cart-link[data-account-key="${accountKey}"]`);
+
+  if (activateButton) {
+    activateButton.disabled = true;
+    activateButton.textContent = "Ativando...";
   }
-  
+  if (cartLink) {
+    cartLink.classList.add("disabled");
+    cartLink.textContent = "Ativando ofertas...";
+  }
+
   try {
     const response = await fetch("/api/activations/run", {
       method: "POST",
@@ -1472,33 +1543,54 @@ async function triggerCloudActivation(accountKey) {
       body: JSON.stringify({ accountKey, skus })
     });
     const result = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(result.error || "Erro na ativação");
     }
-    
+
     if (!state.plan.activations) {
       state.plan.activations = {};
     }
     state.plan.activations[accountKey] = result;
-    
+
     if (result.success) {
       setStatus("Ativado", "ready");
-      alert(`${account.label}: ${result.message}`);
+      renderPersonalOffers(state.plan.personalOffers);
+      renderBuyPhase(state.plan);
+      return true;
     } else {
       setStatus("Erro", "error");
       alert(`Falha ao ativar: ${result.message}`);
+      renderPersonalOffers(state.plan.personalOffers);
+      renderBuyPhase(state.plan);
+      return false;
     }
-    
-    renderPersonalOffers(state.plan.personalOffers);
   } catch (error) {
     setStatus("Erro", "error");
     alert(`Erro na ativação: ${error.message}`);
-  } finally {
-    if (button) {
-      button.disabled = false;
-      button.textContent = "Ativar na Nuvem";
+    if (state.plan) {
+      if (!state.plan.activations) state.plan.activations = {};
+      state.plan.activations[accountKey] = { success: false, message: error.message };
     }
+    renderPersonalOffers(state.plan.personalOffers);
+    renderBuyPhase(state.plan);
+    return false;
+  } finally {
+    if (activateButton) {
+      activateButton.disabled = false;
+      activateButton.textContent = "Ativar na Nuvem";
+    }
+    if (cartLink) {
+      cartLink.classList.remove("disabled");
+      cartLink.textContent = "Montar carrinho";
+    }
+  }
+}
+
+async function triggerCloudActivation(accountKey) {
+  const success = await runCloudActivationFlow(accountKey);
+  if (success && state.plan?.activations?.[accountKey]) {
+    alert(`${accountKey === "erico" ? "Erico" : "Dani"}: ${state.plan.activations[accountKey].message}`);
   }
 }
 

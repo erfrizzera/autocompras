@@ -4,22 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Auto Compras</title>
-    <link rel="stylesheet" href="/styles.css?v=20260623-removed-items" />
+    <link rel="stylesheet" href="/styles.css?v=v16" />
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
         <div>
           <h1>Auto Compras</h1>
-          <p>Zona Sul</p>
+          <p>Zona Sul - v16</p>
         </div>
         <div class="topbar-actions">
-          <a class="secondary-link" id="spreadsheetLink" href="#" target="_blank" rel="noreferrer" style="display: none;">
-            Planilha de Dados
-          </a>
-          <a class="secondary-link" id="loginLink" href="https://www.zonasul.com.br/login" target="_blank" rel="noreferrer">
-            Entrar no Zona Sul
-          </a>
           <span class="status-pill" id="statusText">Aguardando</span>
         </div>
       </header>
@@ -68,10 +62,7 @@
 
           <div class="item-list" id="itemList"></div>
 
-          <div class="pending-box">
-            <strong>Pendencias de implementacao</strong>
-            <span>Permitir editar manualmente nome, foto e referencia dos novos itens.</span>
-          </div>
+
         </section>
 
         <section class="panel phase-panel" id="phaseReview" aria-labelledby="reviewTitle" hidden>
@@ -101,10 +92,7 @@
             </div>
           </div>
 
-          <div class="pending-box">
-            <strong>Pendencias de implementacao</strong>
-            <span>Ajustar automaticamente o carrinho seguindo sugestoes dos insights.</span>
-          </div>
+
         </section>
 
         <section class="panel phase-panel" id="phaseBuy" aria-labelledby="buyTitle" hidden>
@@ -118,17 +106,26 @@
             </button>
           </div>
 
+          <div class="instructions-box" style="margin: 16px 18px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; gap: 10px;">
+            <strong style="color: var(--green); font-size: 14px;">Próximos passos:</strong>
+            <ol style="margin: 0; padding-left: 20px; color: var(--text); font-size: 13px; line-height: 1.5; display: grid; gap: 6px;">
+              <li>Abra uma aba do zona sul e logue em uma conta</li>
+              <li>Limpe o carrinho de compras se ja tiver algo</li>
+              <li>Volte a aba de Auto Compras, escolha o botao de montar o carrinho da conta que voce logou</li>
+              <li>volte ao zona sul, indique os itens da Minhas Ofertas e finalize a compra</li>
+            </ol>
+          </div>
+
           <div class="buy-grid" id="buyAccounts"></div>
 
           <div class="pending-box">
-            <strong>Pendencias de implementacao</strong>
-            <span>Lidar com erro de terminar uma compra e nao deslogar da conta Dani ou Erico.</span>
-            <span>Automatizar troca/conferencia de login antes de abrir cada carrinho.</span>
+            <strong>Pendência de implementação</strong>
+            <span>Solucionar o como Montar Minhas Ofertas</span>
           </div>
         </section>
       </main>
     </div>
 
-    <script src="/app.js?v=20260623-removed-items" type="module"></script>
+    <script src="/app.js?v=v16" type="module"></script>
   </body>
 </html>
