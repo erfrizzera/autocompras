@@ -1,0 +1,4 @@
+node_modules/
+data/item-previews-cache.json
+test_paodeacucar_fetch.js
+*.bak

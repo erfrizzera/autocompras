@@ -1,0 +1,12 @@
+{
+  "name": "auto-compras",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "import:zonasul": "node scripts/import-zonasul-orders.mjs",
+    "test:cart": "node scripts/zonasul-cart-test.mjs",
+    "test:webapp": "node scripts/check-webapp.mjs"
+  }
+}

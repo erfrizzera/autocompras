@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auto Compras</title>
+    <link rel="stylesheet" href="/styles.css?v=20260623-removed-items" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Auto Compras</h1>
+          <p>Zona Sul</p>
+        </div>
+        <div class="topbar-actions">
+          <a class="secondary-link" id="spreadsheetLink" href="#" target="_blank" rel="noreferrer" style="display: none;">
+            Planilha de Dados
+          </a>
+          <a class="secondary-link" id="loginLink" href="https://www.zonasul.com.br/login" target="_blank" rel="noreferrer">
+            Entrar no Zona Sul
+          </a>
+          <span class="status-pill" id="statusText">Aguardando</span>
+        </div>
+      </header>
+
+      <nav class="phase-steps" aria-label="Fases da compra">
+        <button class="phase-step active" type="button" data-go-phase="list">
+          <strong>01</strong>
+          <span>Lista</span>
+        </button>
+        <button class="phase-step" type="button" data-go-phase="review">
+          <strong>02</strong>
+          <span>Precos</span>
+        </button>
+        <button class="phase-step" type="button" data-go-phase="buy">
+          <strong>03</strong>
+          <span>Comprar</span>
+        </button>
+      </nav>
+
+      <main class="phase-shell">
+        <section class="panel phase-panel" id="phaseList" aria-labelledby="listTitle">
+          <div class="panel-header">
+            <div>
+              <h2 id="listTitle">01 Lista de compras</h2>
+              <p id="listSummary">Carregando lista historica</p>
+            </div>
+            <button class="primary-button" id="checkPricesButton" type="button">
+              Checar precos
+            </button>
+          </div>
+
+          <div class="phase-note">
+            A lista historica fica sempre aqui. Use 0 para deixar um item fora desta compra sem apagar da lista.
+          </div>
+
+          <form class="add-product-form" id="addProductForm">
+            <label for="productLinkInput">Adicionar produto por link do Zona Sul</label>
+            <div>
+              <input id="productLinkInput" type="url" inputmode="url" placeholder="Cole o link do produto" autocomplete="off" />
+              <button class="secondary-button" id="addProductButton" type="submit">
+                Adicionar
+              </button>
+            </div>
+            <span id="addProductStatus">O produto entra na base historica com quantidade 0.</span>
+          </form>
+
+          <div class="item-list" id="itemList"></div>
+
+          <div class="pending-box">
+            <strong>Pendencias de implementacao</strong>
+            <span>Permitir editar manualmente nome, foto e referencia dos novos itens.</span>
+          </div>
+        </section>
+
+        <section class="panel phase-panel" id="phaseReview" aria-labelledby="reviewTitle" hidden>
+          <div class="panel-header">
+            <div>
+              <h2 id="reviewTitle">02 Checagem de preco</h2>
+              <p id="cartSummary">Sem consulta</p>
+            </div>
+            <div class="panel-actions">
+              <button class="secondary-button" id="backToListButton" type="button">
+                Voltar
+              </button>
+              <button class="primary-button" id="goToBuyButton" type="button">
+                Comprar
+              </button>
+            </div>
+          </div>
+
+          <div class="purchase-summary" id="purchaseSummary" hidden></div>
+          <div class="personal-offers" id="personalOffers" hidden></div>
+          <div class="comparison-insights" id="comparisonInsights" hidden></div>
+
+          <div class="results" id="results">
+            <div class="empty-state">
+              <strong>Aguardando checagem</strong>
+              <span>Os resultados aparecem aqui</span>
+            </div>
+          </div>
+
+          <div class="pending-box">
+            <strong>Pendencias de implementacao</strong>
+            <span>Ajustar automaticamente o carrinho seguindo sugestoes dos insights.</span>
+          </div>
+        </section>
+
+        <section class="panel phase-panel" id="phaseBuy" aria-labelledby="buyTitle" hidden>
+          <div class="panel-header">
+            <div>
+              <h2 id="buyTitle">03 Comprar</h2>
+              <p id="buySummary">Monte um carrinho por conta e revise no Zona Sul.</p>
+            </div>
+            <button class="secondary-button" id="backToReviewButton" type="button">
+              Voltar
+            </button>
+          </div>
+
+          <div class="buy-grid" id="buyAccounts"></div>
+
+          <div class="pending-box">
+            <strong>Pendencias de implementacao</strong>
+            <span>Lidar com erro de terminar uma compra e nao deslogar da conta Dani ou Erico.</span>
+            <span>Automatizar troca/conferencia de login antes de abrir cada carrinho.</span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js?v=20260623-removed-items" type="module"></script>
+  </body>
+</html>
