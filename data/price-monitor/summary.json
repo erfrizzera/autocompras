@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-28T13:06:57.709Z",
+  "generatedAt": "2026-06-28T13:25:10.905Z",
   "timeZone": "America/Sao_Paulo",
-  "totalObservations": 248,
-  "totalRuns": 4,
-  "validRuns": 4,
+  "totalObservations": 310,
+  "totalRuns": 5,
+  "validRuns": 5,
   "latestRun": {
-    "runId": "2026-06-28T13:06:20.475Z",
-    "observedAt": "2026-06-28T13:06:20.475Z",
+    "runId": "2026-06-28T13:24:40.680Z",
+    "observedAt": "2026-06-28T13:24:40.680Z",
     "localDate": "2026-06-28",
-    "localTime": "10:06:20",
+    "localTime": "10:24:40",
     "dayOfWeek": "Sunday",
     "hour": 10,
     "itemCount": 62,
@@ -22,13 +22,13 @@
   "byDayOfWeek": [
     {
       "key": "Sunday",
-      "observations": 4,
-      "averageBasketTotal": 2912.93,
+      "observations": 5,
+      "averageBasketTotal": 2915.92,
       "minBasketTotal": 2867.97,
       "maxBasketTotal": 2927.91,
-      "standardDeviation": 25.95,
-      "averageUnavailableCount": 0.25,
-      "averageDiscount": 6.83
+      "standardDeviation": 23.98,
+      "averageUnavailableCount": 0.2,
+      "averageDiscount": 6.82
     }
   ],
   "byHour": [
@@ -54,7 +54,7 @@
     },
     {
       "key": "10:00",
-      "observations": 1,
+      "observations": 2,
       "averageBasketTotal": 2927.91,
       "minBasketTotal": 2927.91,
       "maxBasketTotal": 2927.91,
@@ -86,7 +86,7 @@
     },
     {
       "key": "Sunday 10:00",
-      "observations": 1,
+      "observations": 2,
       "averageBasketTotal": 2927.91,
       "minBasketTotal": 2927.91,
       "maxBasketTotal": 2927.91,
@@ -100,13 +100,13 @@
     "minimumRule": "Exigir pelo menos 14 dias, 5 observacoes por dia da semana e 10 observacoes por horario.",
     "bestDayOfWeek": {
       "key": "Sunday",
-      "observations": 4,
-      "averageBasketTotal": 2912.93,
+      "observations": 5,
+      "averageBasketTotal": 2915.92,
       "minBasketTotal": 2867.97,
       "maxBasketTotal": 2927.91,
-      "standardDeviation": 25.95,
-      "averageUnavailableCount": 0.25,
-      "averageDiscount": 6.83
+      "standardDeviation": 23.98,
+      "averageUnavailableCount": 0.2,
+      "averageDiscount": 6.82
     },
     "bestHour": {
       "key": "00:00",
@@ -128,6 +128,6 @@
       "averageUnavailableCount": 1,
       "averageDiscount": 6.91
     },
-    "estimatedSavingsVsAverage": 44.95
+    "estimatedSavingsVsAverage": 47.95
   }
 }
