@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.mjs",
     "import:zonasul": "node scripts/import-zonasul-orders.mjs",
+    "monitor:prices": "node scripts/monitor-zonasul-prices.mjs",
     "test:cart": "node scripts/zonasul-cart-test.mjs",
     "test:webapp": "node scripts/check-webapp.mjs"
   }

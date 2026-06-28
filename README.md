@@ -32,6 +32,12 @@ Teste de cotacao/carrinho pelo terminal:
 & 'C:\Users\EricodosReisFrizzera\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' .\scripts\zonasul-cart-test.mjs
 ```
 
+Coleta de precos para o monitoramento:
+
+```powershell
+& 'C:\Users\EricodosReisFrizzera\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' .\scripts\monitor-zonasul-prices.mjs
+```
+
 ## Fluxo do app
 
 O app trabalha em tres fases.
@@ -145,6 +151,43 @@ Na fase 3, existem dois carrinhos:
 O restante da compra e dividido por logistica: pesados/limpeza tendem a ir para Erico, pereciveis tendem a ir para Dani, e o restante ajuda a equilibrar totais. Os itens que nao sao Minhas Ofertas podem ser movidos manualmente entre os carrinhos.
 
 O botao de carrinho abre direto o link do Zona Sul. Antes de clicar, confira se o navegador esta logado na conta certa ou deslogue/troque de conta quando necessario.
+
+## Monitoramento de melhor dia e hora
+
+O projeto inclui um coletor para monitorar os precos do Zona Sul ao longo do tempo:
+
+```powershell
+npm run monitor:prices
+```
+
+O coletor:
+
+- le os links dos produtos da lista historica, incluindo produtos adicionados por link
+- ignora itens retirados
+- consulta o catalogo publico do Zona Sul, sem login
+- grava observacoes em `data/price-monitor/observations.jsonl`
+- atualiza o resumo em `data/price-monitor/summary.json`
+- calcula agregados por dia da semana, horario e dia+horario
+
+A recomendacao de melhor dia/hora so deve ser considerada quando houver amostra minima:
+
+- pelo menos 14 dias de dados
+- pelo menos 5 observacoes por dia da semana
+- pelo menos 10 observacoes por faixa de horario
+- coletas com erro em mais de 20% dos itens devem ser ignoradas
+
+Para rodar fora deste PC, ha um workflow do GitHub Actions chamado `velho sábado do mercado`, definido em `.github/workflows/zona-sul-price-monitor.yml`. Ele roda todos os dias, em UTC equivalente aos horarios de Sao Paulo:
+
+- 02:30
+- 04:30
+- 06:30
+- 09:30
+- 12:30
+- 15:30
+- 18:30
+- 22:30
+
+O workflow executa `node scripts/monitor-zonasul-prices.mjs` e commita os arquivos de historico e resumo no repositorio.
 
 ## Pendencias conhecidas
 
