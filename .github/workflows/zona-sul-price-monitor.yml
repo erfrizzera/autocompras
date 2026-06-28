@@ -10,11 +10,16 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -39,3 +44,23 @@ jobs:
             git commit -m "Update Zona Sul price monitor"
             git push
           fi
+
+      - name: Prepare dashboard
+        run: |
+          rm -rf _site
+          mkdir -p _site/data/price-monitor
+          cp -R dashboard/. _site/
+          cp data/price-monitor/summary.json _site/data/price-monitor/summary.json
+          cp data/price-monitor/observations.jsonl _site/data/price-monitor/observations.jsonl
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy dashboard
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Velho Sábado do Mercado</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Zona Sul</p>
+        <h1>Velho Sábado do Mercado</h1>
+      </div>
+      <div class="status">
+        <span id="lastRefresh">Carregando...</span>
+        <button id="refreshButton" type="button">Atualizar</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="summary-grid" aria-label="Resumo da ultima coleta">
+        <article class="metric primary">
+          <span>Total da cesta</span>
+          <strong id="basketTotal">--</strong>
+          <small id="basketDelta">--</small>
+        </article>
+        <article class="metric">
+          <span>Ultima coleta</span>
+          <strong id="latestRun">--</strong>
+          <small id="latestStatus">--</small>
+        </article>
+        <article class="metric">
+          <span>Disponibilidade</span>
+          <strong id="availability">--</strong>
+          <small id="errors">--</small>
+        </article>
+        <article class="metric">
+          <span>Desconto medio</span>
+          <strong id="averageDiscount">--</strong>
+          <small id="sampleSize">--</small>
+        </article>
+      </section>
+
+      <section class="panel trend-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Evolucao</p>
+            <h2>Total da cesta por coleta</h2>
+          </div>
+          <span id="rangeLabel" class="pill">--</span>
+        </div>
+        <div id="basketChart" class="chart" role="img" aria-label="Grafico de evolucao da cesta"></div>
+      </section>
+
+      <section class="grid-two">
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Desde a coleta anterior</p>
+              <h2>Maiores movimentos</h2>
+            </div>
+          </div>
+          <div id="movementList" class="list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Historico</p>
+              <h2>Top 5 precos altos</h2>
+            </div>
+          </div>
+          <div id="highPriceList" class="list"></div>
+        </article>
+      </section>
+
+      <section class="grid-two">
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Compra</p>
+              <h2>Melhores janelas ate agora</h2>
+            </div>
+          </div>
+          <div id="bestWindows" class="table-wrap"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Atencao</p>
+              <h2>Itens indisponiveis ou com erro</h2>
+            </div>
+          </div>
+          <div id="issuesList" class="list"></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Produtos</p>
+            <h2>Ultimos precos coletados</h2>
+          </div>
+          <input id="itemSearch" type="search" placeholder="Filtrar produto" />
+        </div>
+        <div id="itemsTable" class="table-wrap"></div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

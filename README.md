@@ -187,7 +187,27 @@ Para rodar fora deste PC, ha um workflow do GitHub Actions chamado `velho sábad
 - 18:30
 - 22:30
 
-O workflow executa `node scripts/monitor-zonasul-prices.mjs` e commita os arquivos de historico e resumo no repositorio.
+O workflow executa `node scripts/monitor-zonasul-prices.mjs`, commita os arquivos de historico e resumo no repositorio e publica o dashboard externo no GitHub Pages.
+
+## Dashboard externo
+
+O dashboard fica em `dashboard/` e e publicado pelo proprio workflow `velho sábado do mercado`. A cada coleta ele:
+
+- atualiza `data/price-monitor/observations.jsonl`
+- atualiza `data/price-monitor/summary.json`
+- empacota o dashboard estatico com os dados mais recentes
+- publica tudo no GitHub Pages
+
+O dashboard mostra:
+
+- total da cesta na ultima coleta
+- variacao contra a coleta anterior
+- evolucao grafica do total da cesta
+- top movimentos de preco
+- top 5 itens mais caros contra o historico
+- melhores janelas de compra observadas ate agora
+- itens indisponiveis ou com erro
+- tabela dos ultimos precos coletados por produto
 
 ## Pendencias conhecidas
 
