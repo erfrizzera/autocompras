@@ -18,37 +18,31 @@ coletor (o próprio clique do usuário) → armazém (Google Sheets) → tela (G
 - **Tela**: `index.html` na raiz é uma moldura no GitHub Pages com um iframe apontando
   pro Web App.
 
-## Como fazer o deploy
+## Deploy
 
-Pré-requisito: [`clasp`](https://github.com/google/clasp) instalado e autenticado
-(`clasp login`) com a conta Google dona da planilha.
+Planilha, projeto Apps Script, código e deploy do Web App já foram criados via
+`clasp` (script vinculado à planilha — não precisa de Script Property `SHEET_ID`).
+Faltam só dois cliques manuais que o Google exige do dono da conta (`clasp` não
+consegue fazer isso sozinho — é bloqueio de segurança, não falha):
 
-1. **Criar a planilha**: crie um Google Sheets novo (vazio) e copie o ID dele (na URL,
-   entre `/d/` e `/edit`).
-2. **Criar o projeto Apps Script**:
-   ```powershell
-   cd apps-script
-   clasp create --type webapp --title "Auto Compras"
-   clasp push
-   ```
-3. **Configurar a Script Property `SHEET_ID`**: abra o projeto no editor
-   (`clasp open`) → ⚙️ Configurações do projeto → Propriedades do script → adicione
-   `SHEET_ID` com o ID da planilha.
-4. **Rodar `configurarPlanilha()`** uma vez pelo editor do Apps Script (menu de
-   funções → selecionar `configurarPlanilha` → executar). Isso cria as abas `Itens` e
-   `Compras` com o cabeçalho certo. Na primeira execução, autorize os escopos pedidos
-   (acesso ao Sheets).
-5. **Publicar o Web App**: no editor, Implantar → Nova implantação → tipo "App da
-   Web", executar como "Eu", acesso "Qualquer pessoa". Copie a URL `.../exec`.
-   O `clasp` não consegue configurar o acesso "Qualquer pessoa" sozinho — isso precisa
-   ser feito manualmente no painel.
-6. **Colar a URL no `index.html`**: troque `COLE_AQUI_A_URL_DO_WEB_APP_EXEC` pela URL
-   `.../exec` copiada no passo anterior.
-7. **Publicar o GitHub Pages**: `git push` pro repositório
-   [`erfrizzera/autocompras`](https://github.com/erfrizzera/autocompras) e ative o
-   Pages nas configurações do repo (branch `main`, pasta raiz).
+1. Abra o script e rode `configurarPlanilha()` uma vez pelo menu de funções do
+   editor, aceitando a autorização de acesso ao Sheets. Isso cria as abas `Itens` e
+   `Compras` com o cabeçalho certo.
+2. Confira em Implantar → Gerenciar implantações que o acesso está como "Qualquer
+   pessoa".
 
-Depois disso o endereço do GitHub Pages já mostra o app funcionando dentro da moldura.
+Links e detalhes em [`CLAUDE.md`](CLAUDE.md). Depois disso o Web App já responde e a
+moldura em `index.html` (colada com a URL `/exec`) funciona.
+
+Para reenviar código depois de editar `apps-script/`:
+```powershell
+cd apps-script
+npx @google/clasp push
+npx @google/clasp deploy
+```
+Falta ativar o GitHub Pages no repositório (Settings → Pages → branch `main`, pasta
+raiz) — o código já está enviado (`git push` feito). Depois disso o endereço do
+GitHub Pages já mostra o app funcionando dentro da moldura.
 
 ## Usar o app
 

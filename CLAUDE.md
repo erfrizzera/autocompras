@@ -41,12 +41,30 @@ o mesmo padrão usado no Controle de Despachante.
   Minhas Ofertas, histórico de compras.
 - `apps-script/App.html` — interface (3 fases: lista, checagem, comprar).
 
-## Pendências de deploy
+## Deploy — o que já foi feito automaticamente (via clasp)
 
-1. Criar a planilha Google Sheets e rodar `configurarPlanilha()` uma vez pelo editor
-   do Apps Script (cria as abas `Itens` e `Compras` com cabeçalho).
-2. Definir a Script Property `SHEET_ID` com o ID da planilha.
-3. Publicar o Web App (`executeAs: USER_DEPLOYING`, `access: ANYONE_ANONYMOUS`) — a
-   aprovação de escopos OAuth (Sheets) precisa ser feita manualmente pelo navegador.
-4. Colar a URL `/exec` do Web App no `src` do iframe em `index.html`.
-5. Ativar GitHub Pages no repositório (`github.com/erfrizzera/autocompras`).
+- Planilha + projeto Apps Script criados juntos (script vinculado à planilha, usa
+  `SpreadsheetApp.getActiveSpreadsheet()` — sem precisar de Script Property `SHEET_ID`).
+  Planilha: https://drive.google.com/open?id=1GB221vrAqHqVj9ILfxPrRXfOxw3zAcEvDXYmFsFHgAc
+  Script: https://script.google.com/d/1igaCYdmDzNONJ-9wZxyQV5LyHbqXbVLXXStuEQmd9Rhc1QWBctx1Alvt/edit
+- Código (`Codigo.gs`, `App.html`, `appsscript.json`) enviado via `clasp push`.
+- Deploy do Web App criado via `clasp deploy` (`executeAs: USER_DEPLOYING`,
+  `access: ANYONE_ANONYMOUS`). URL `/exec` já colada em `index.html`.
+- Remote git trocado para `origin` → `github.com/erfrizzera/autocompras`, branch
+  `main` já commitada e enviada (`git push`).
+
+## Pendências de deploy — bloqueadas em clique manual no navegador
+
+Igual ao Controle de Despachante: `clasp` não consegue nem autorizar os escopos OAuth
+(Sheets) nem confirmar o acesso "Qualquer pessoa" do deploy — isso é bloqueio de
+segurança do Google, só o dono da conta consegue fazer pelo navegador.
+
+1. Abra o script (link acima) → rode a função `configurarPlanilha` uma vez pelo menu
+   de funções do editor → aceite a tela de autorização (acesso ao Sheets). Isso cria
+   as abas `Itens` e `Compras` com cabeçalho.
+2. Implantar → Gerenciar implantações → confirme que o deploy tem acesso "Qualquer
+   pessoa" (o `clasp deploy` cria a implantação, mas não sempre grava esse nível de
+   acesso — confira e ajuste se precisar).
+3. Ative o GitHub Pages no repositório (Settings → Pages → branch `main`, pasta raiz).
+
+Sem o passo 1, o Web App responde 403 — é esperado até a primeira autorização manual.

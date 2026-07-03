@@ -1,7 +1,6 @@
 // Motor único do Auto Compras: serve a tela, lê/escreve no Sheets (armazém)
 // e consulta o catálogo público do Zona Sul (UrlFetchApp evita CORS).
 
-const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
 const ABA_ITENS = 'Itens';
 const ABA_COMPRAS = 'Compras';
 
@@ -49,7 +48,7 @@ function include(nomeArquivo) {
 
 // Roda uma vez no editor do Apps Script para criar as abas do armazém.
 function configurarPlanilha() {
-  const planilha = SpreadsheetApp.openById(SHEET_ID);
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
   criarAbaSeNaoExiste(planilha, ABA_ITENS, COLUNAS_ITENS);
   criarAbaSeNaoExiste(planilha, ABA_COMPRAS, COLUNAS_COMPRAS);
 }
@@ -100,7 +99,7 @@ function listarItens() {
 
 function adicionarItemPorLink(url) {
   const produto = resolverProdutoPorUrl_(url);
-  const planilha = SpreadsheetApp.openById(SHEET_ID);
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
   const aba = planilha.getSheetByName(ABA_ITENS);
   const linhas = lerLinhasItens_();
   const key = 'link:' + (produto.sku || slugify_(produto.nome));
@@ -142,7 +141,7 @@ function reativarItem(key) {
 }
 
 function atualizarStatusItem_(key, status) {
-  const planilha = SpreadsheetApp.openById(SHEET_ID);
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
   const aba = planilha.getSheetByName(ABA_ITENS);
   const linhas = lerLinhasItens_();
   const indice = linhas.findIndex((linha) => linha.Key === key);
@@ -444,7 +443,7 @@ function montarUrlCarrinho_(itens) {
 // ---------- Concluir compra (histórico de dados) ----------
 
 function concluirCompra(registro) {
-  const planilha = SpreadsheetApp.openById(SHEET_ID);
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
   const abaCompras = planilha.getSheetByName(ABA_COMPRAS);
   const agora = new Date();
   const itens = registro.itens || [];
@@ -461,7 +460,7 @@ function concluirCompra(registro) {
 }
 
 function atualizarPrecoReferencia_(key, precoPago, quantidade, data) {
-  const planilha = SpreadsheetApp.openById(SHEET_ID);
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
   const aba = planilha.getSheetByName(ABA_ITENS);
   const linhas = lerLinhasItens_();
   const indice = linhas.findIndex((linha) => linha.Key === key);
@@ -507,7 +506,7 @@ function resolverProdutoPorUrl_(url) {
 // ---------- Helpers de planilha ----------
 
 function lerLinhasItens_() {
-  const planilha = SpreadsheetApp.openById(SHEET_ID);
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
   const aba = planilha.getSheetByName(ABA_ITENS);
   const valores = aba.getDataRange().getValues();
   const cabecalho = valores[0];
