@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto Compras</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #F7F6F1; }
+  iframe { border: 0; width: 100%; height: 100%; display: block; }
+  #selo {
+    position: fixed; right: 8px; bottom: 6px; font: 11px -apple-system, sans-serif;
+    color: #97958C; background: rgba(255,255,255,0.85); padding: 1px 6px; border-radius: 4px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<iframe src="COLE_AQUI_A_URL_DO_WEB_APP_EXEC" title="Auto Compras" allow="clipboard-write"></iframe>
+<span id="selo"></span>
+<script>
+  fetch('version.json').then(function (r) { return r.json(); }).then(function (d) {
+    document.getElementById('selo').textContent = 'v' + d.version;
+  }).catch(function () {});
+</script>
+</body>
+</html>
