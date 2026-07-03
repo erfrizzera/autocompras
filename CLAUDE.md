@@ -24,6 +24,11 @@ o mesmo padrão usado no Controle de Despachante.
   explícita: preço só é checado no momento do uso, não em monitoramento contínuo.
 - **Sem comparação com Pão de Açúcar ou qualquer scraper de concorrente** — removido
   do escopo desta versão.
+- **Base de preços do projeto anterior (Antigravity) reaproveitada como dado, não como
+  código**: os 61 itens recorrentes de `savedShoppingItems` (`src/zonasulCatalog.mjs`
+  do sistema antigo) foram extraídos, classificados por segmento e viraram
+  `apps-script/BaseHistorica.gs` — uma lista para importar na aba `Itens` uma única vez
+  (`importarBaseHistorica()`), evitando começar a lista recorrente do zero.
 - **Frontend no estilo visual do Claude** — tokens de cor/tipografia/espaçamento
   inspirados no Claude Design System (superfícies planas, bordas de 0.5px, cantos de
   8–12px, cor de destaque coral/clay, sentence case, ícones Tabler outline).
@@ -40,6 +45,8 @@ o mesmo padrão usado no Controle de Despachante.
 - `apps-script/Codigo.gs` — motor: Sheets, catálogo Zona Sul, ranqueamento, carrinhos,
   Minhas Ofertas, histórico de compras.
 - `apps-script/App.html` — interface (3 fases: lista, checagem, comprar).
+- `apps-script/BaseHistorica.gs` — base de preços trazida do projeto anterior (61
+  itens), com a função `importarBaseHistorica()`.
 
 ## Deploy — o que já foi feito automaticamente (via clasp)
 
@@ -53,18 +60,12 @@ o mesmo padrão usado no Controle de Despachante.
 - Remote git trocado para `origin` → `github.com/erfrizzera/autocompras`, branch
   `main` já commitada e enviada (`git push`).
 
-## Pendências de deploy — bloqueadas em clique manual no navegador
+## Deploy — status
 
-Igual ao Controle de Despachante: `clasp` não consegue nem autorizar os escopos OAuth
-(Sheets) nem confirmar o acesso "Qualquer pessoa" do deploy — isso é bloqueio de
-segurança do Google, só o dono da conta consegue fazer pelo navegador.
-
-1. Abra o script (link acima) → rode a função `configurarPlanilha` uma vez pelo menu
-   de funções do editor → aceite a tela de autorização (acesso ao Sheets). Isso cria
-   as abas `Itens` e `Compras` com cabeçalho.
-2. Implantar → Gerenciar implantações → confirme que o deploy tem acesso "Qualquer
-   pessoa" (o `clasp deploy` cria a implantação, mas não sempre grava esse nível de
-   acesso — confira e ajuste se precisar).
-3. Ative o GitHub Pages no repositório (Settings → Pages → branch `main`, pasta raiz).
-
-Sem o passo 1, o Web App responde 403 — é esperado até a primeira autorização manual.
+1. ~~Rodar `configurarPlanilha` pelo editor~~ — feito.
+2. ~~Confirmar acesso "Qualquer pessoa" no deploy~~ — feito.
+3. ~~Ativar GitHub Pages~~ — feito, no ar em https://erfrizzera.github.io/autocompras/.
+4. **Pendente**: rodar `importarBaseHistorica` uma vez pelo menu de funções do editor
+   do Apps Script, pra trazer os 61 itens da base antiga pra aba `Itens`. Mesmo clique
+   manual dos passos 1–2 (o `clasp` não consegue rodar funções que dependem de escopos
+   OAuth ainda não consentidos pelo dono da conta).
