@@ -139,6 +139,13 @@
 </div>
 
 <script>
+  window.onerror = function (mensagem, origem, linha, coluna, erro) {
+    var container = document.getElementById('grupos-itens');
+    if (container) {
+      container.innerHTML = '<p class="vazio">Erro JS: ' + mensagem + ' (linha ' + linha + ')</p>';
+    }
+  };
+
   var estado = { itens: [], contas: [], resultadoCheagem: null };
 
   document.querySelectorAll('.aba').forEach(function (aba) {

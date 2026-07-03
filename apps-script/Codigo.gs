@@ -85,7 +85,7 @@ function listarItens() {
     segmento: linha.Segmento,
     precoReferencia: numeroOuNulo_(linha.PrecoReferencia),
     quantidadeTipica: Number(linha.QuantidadeTipica) || 1,
-    dataUltimaCompra: linha.DataUltimaCompra || null,
+    dataUltimaCompra: formatarData_(linha.DataUltimaCompra),
     status: linha.Status || 'ativo',
     origem: linha.Origem || 'historico',
     link: linha.Link || null,
@@ -531,6 +531,14 @@ function numeroOuNulo_(valor) {
   if (valor === '' || valor === null || valor === undefined) return null;
   const numero = Number(valor);
   return Number.isFinite(numero) ? numero : null;
+}
+
+function formatarData_(valor) {
+  if (!valor) return null;
+  if (Object.prototype.toString.call(valor) === '[object Date]') {
+    return Utilities.formatDate(valor, 'America/Sao_Paulo', 'yyyy-MM-dd');
+  }
+  return String(valor);
 }
 
 function arredondar_(valor) {
