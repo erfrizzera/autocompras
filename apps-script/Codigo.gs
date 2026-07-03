@@ -129,7 +129,7 @@ function adicionarItemPorLink(url) {
     aba.appendRow(COLUNAS_ITENS.map((coluna) => novaLinha[coluna]));
   }
 
-  return { ok: true, item: novaLinha };
+  return { ok: true, key: novaLinha.Key, nome: novaLinha.Nome, precoReferencia: novaLinha.PrecoReferencia };
 }
 
 function retirarItem(key) {
@@ -153,6 +153,49 @@ function atualizarStatusItem_(key, status) {
   const colunaStatus = COLUNAS_ITENS.indexOf('Status') + 1;
   aba.getRange(indice + 2, colunaStatus).setValue(status);
   return { ok: true, key, status };
+}
+
+// Roda uma vez (ou sempre que quiser) pelo editor do Apps Script para buscar
+// foto/link/sku dos itens que ainda não têm — a base histórica trazida do
+// projeto anterior não tinha essa informação.
+function preencherImagens() {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  const aba = planilha.getSheetByName(ABA_ITENS);
+  const valores = aba.getDataRange().getValues();
+  const cabecalho = valores[0];
+  const colImagem = cabecalho.indexOf('Imagem');
+  const colLink = cabecalho.indexOf('Link');
+  const colSku = cabecalho.indexOf('Sku');
+  const colSellerId = cabecalho.indexOf('SellerId');
+  const colTermoBusca = cabecalho.indexOf('TermoBusca');
+  const colStatus = cabecalho.indexOf('Status');
+
+  let preenchidos = 0;
+  let falhas = 0;
+
+  for (let linha = 1; linha < valores.length; linha += 1) {
+    const dados = valores[linha];
+    if (!dados[colTermoBusca] || dados[colStatus] === 'retirado' || dados[colImagem]) continue;
+
+    try {
+      const candidatos = buscarCandidatos_(String(dados[colTermoBusca]));
+      const melhor = candidatos[0];
+      if (melhor) {
+        const numeroLinha = linha + 1;
+        aba.getRange(numeroLinha, colImagem + 1).setValue(melhor.imagem || '');
+        aba.getRange(numeroLinha, colLink + 1).setValue(melhor.link || '');
+        aba.getRange(numeroLinha, colSku + 1).setValue(melhor.sku || '');
+        aba.getRange(numeroLinha, colSellerId + 1).setValue(melhor.sellerId || '');
+        preenchidos += 1;
+      }
+    } catch (erro) {
+      falhas += 1;
+    }
+
+    Utilities.sleep(150);
+  }
+
+  return { ok: true, preenchidos, falhas };
 }
 
 // ---------- Checagem de preço ----------

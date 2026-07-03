@@ -22,16 +22,12 @@ coletor (o próprio clique do usuário) → armazém (Google Sheets) → tela (G
 
 Planilha, projeto Apps Script, código e deploy do Web App já foram criados via
 `clasp` (script vinculado à planilha — não precisa de Script Property `SHEET_ID`).
-Faltam só dois cliques manuais que o Google exige do dono da conta (`clasp` não
-consegue fazer isso sozinho — é bloqueio de segurança, não falha):
+O app já está no ar. Um passo opcional pendente:
 
-1. Abra o script e rode `configurarPlanilha()` uma vez pelo menu de funções do
-   editor, aceitando a autorização de acesso ao Sheets. Isso cria as abas `Itens` e
-   `Compras` com o cabeçalho certo.
-2. Confira em Implantar → Gerenciar implantações que o acesso está como "Qualquer
-   pessoa".
+- Rode `preencherImagens()` uma vez pelo menu de funções do editor, pra buscar
+  foto/link/sku dos itens que vieram da base histórica (não têm foto até rodar isso).
 
-Links e detalhes em [`CLAUDE.md`](CLAUDE.md). Depois disso o Web App já responde e a
+Links e detalhes em [`CLAUDE.md`](CLAUDE.md). O Web App já responde e a
 moldura em `index.html` (colada com a URL `/exec`) funciona.
 
 Para reenviar código depois de editar `apps-script/`:

@@ -65,7 +65,26 @@ o mesmo padrão usado no Controle de Despachante.
 1. ~~Rodar `configurarPlanilha` pelo editor~~ — feito.
 2. ~~Confirmar acesso "Qualquer pessoa" no deploy~~ — feito.
 3. ~~Ativar GitHub Pages~~ — feito, no ar em https://erfrizzera.github.io/autocompras/.
-4. **Pendente**: rodar `importarBaseHistorica` uma vez pelo menu de funções do editor
-   do Apps Script, pra trazer os 61 itens da base antiga pra aba `Itens`. Mesmo clique
-   manual dos passos 1–2 (o `clasp` não consegue rodar funções que dependem de escopos
-   OAuth ainda não consentidos pelo dono da conta).
+4. ~~Rodar `importarBaseHistorica`~~ — feito, os 61 itens estão na aba `Itens`.
+5. **Pendente**: rodar `preencherImagens` uma vez pelo editor, pra buscar foto/link/sku
+   dos 61 itens (a base antiga não trazia isso). Demora ~1-2min (61 consultas ao
+   catálogo do Zona Sul).
+
+## Bugs encontrados e corrigidos (2026-07-03)
+
+Os dois bugs relatados depois do primeiro deploy tinham a **mesma causa raiz**:
+`google.script.run` trava o callback no cliente, sem lançar nenhum erro, quando o
+valor de retorno do servidor contém um objeto `Date` puro do JavaScript (em vez de
+string). Já apareceu duas vezes:
+
+- **Lista presa em "Carregando..."**: `obterEstadoInicial` devolvia
+  `dataUltimaCompra` como `Date` (o Sheets converte texto tipo "2025-12-28" em data de
+  verdade). Corrigido convertendo pra string (`formatarData_`) antes de devolver.
+- **Botão "Adicionar" travado em "Adicionando..."**: `adicionarItemPorLink` devolvia o
+  objeto inteiro do item novo, incluindo `DataCriacao` (um `new Date()`). Corrigido
+  devolvendo só os campos que o cliente usa (`key`, `nome`, `precoReferencia`).
+
+**Regra geral daqui pra frente**: nenhuma função chamável do cliente
+(`google.script.run`) pode devolver um `Date` bruto no retorno — sempre formatar como
+string primeiro. Também foi adicionado um `window.onerror` no `App.html` que mostra
+qualquer erro de JavaScript futuro na tela, em vez de travar em silêncio.
