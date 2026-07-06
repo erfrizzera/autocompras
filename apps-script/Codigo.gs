@@ -43,7 +43,7 @@ const ABA_ULTIMO = 'UltimoCarrinho';
 const COLUNAS_ULTIMO = ['Data', 'Payload'];
 
 const ABA_HIST = 'HistoricoPrecos';
-const COLUNAS_HIST = ['Data', 'ItemKey', 'Nome', 'Preco', 'Quantidade'];
+const COLUNAS_HIST = ['Data', 'ItemKey', 'Nome', 'PrecoBase'];
 
 function doGet() {
   return HtmlService.createTemplateFromFile('App')
@@ -127,34 +127,56 @@ function gravarUltimoCarrinho(payload) {
   return { ok: true, data: formatarDataHora_(agora) };
 }
 
-// Atualiza o preço de referência na Lista Recorrente com o preço cotado na compra
-// e guarda o preço com a data no HistoricoPrecos (não joga fora o histórico).
-function atualizarBasePrecos(itens) {
+// "Comprar" (fim da compra): arquiva o Preço Base antigo (preço + data) no
+// HistoricoPrecos e grava o novo Preço Base = preço cotado nesta compra, data = hoje.
+function finalizarCompra(itens) {
   const planilha = SpreadsheetApp.getActiveSpreadsheet();
   criarAbaSeNaoExiste(planilha, ABA_HIST, COLUNAS_HIST);
   const abaHist = planilha.getSheetByName(ABA_HIST);
   const abaItens = planilha.getSheetByName(ABA_ITENS);
   const linhas = lerLinhasItens_();
-  const agora = new Date();
-  const hoje = Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd');
+  const hoje = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
   let atualizados = 0;
 
   (itens || []).forEach((item) => {
     if (item.preco == null) return;
-    abaHist.appendRow([agora, item.key, item.nome || '', arredondar_(item.preco), Number(item.quantidade) || 1]);
     const indice = linhas.findIndex((l) => l.Key === item.key);
-    if (indice >= 0) {
-      const linhaPlanilha = indice + 2;
-      abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('PrecoReferencia') + 1).setValue(arredondar_(item.preco));
-      if (item.quantidade) {
-        abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('QuantidadeTipica') + 1).setValue(Number(item.quantidade));
-      }
-      abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('DataUltimaCompra') + 1).setValue(hoje);
-      atualizados += 1;
+    if (indice < 0) return;
+    const linhaPlanilha = indice + 2;
+
+    // Arquiva o Preço Base anterior antes de sobrescrever (não joga fora o histórico).
+    const baseAntiga = numeroOuNulo_(linhas[indice].PrecoReferencia);
+    if (baseAntiga != null) {
+      const dataAntiga = formatarData_(linhas[indice].DataUltimaCompra) || '';
+      abaHist.appendRow([dataAntiga, item.key, item.nome || linhas[indice].Nome || '', baseAntiga]);
     }
+
+    abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('PrecoReferencia') + 1).setValue(arredondar_(item.preco));
+    if (item.quantidade) {
+      abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('QuantidadeTipica') + 1).setValue(Number(item.quantidade));
+    }
+    abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('DataUltimaCompra') + 1).setValue(hoje);
+    atualizados += 1;
   });
 
   return { ok: true, atualizados };
+}
+
+// Reboot: apaga todo o histórico de preço e zera o Preço Base de todos os itens.
+// A partir daí, o Preço Base é preenchido item a item quando você aperta "Comprar".
+function rebootPrecoBase() {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  const abaHist = planilha.getSheetByName(ABA_HIST);
+  if (abaHist && abaHist.getLastRow() > 1) {
+    abaHist.getRange(2, 1, abaHist.getLastRow() - 1, abaHist.getLastColumn()).clearContent();
+  }
+  const abaItens = planilha.getSheetByName(ABA_ITENS);
+  const ultima = abaItens.getLastRow();
+  if (ultima > 1) {
+    abaItens.getRange(2, COLUNAS_ITENS.indexOf('PrecoReferencia') + 1, ultima - 1, 1).clearContent();
+    abaItens.getRange(2, COLUNAS_ITENS.indexOf('DataUltimaCompra') + 1, ultima - 1, 1).clearContent();
+  }
+  return { ok: true };
 }
 
 // ---------- Log de carrinho (histórico de listas/carrinhos gravados) ----------
@@ -484,11 +506,11 @@ function serializarCandidato_(candidato, ranking, quantidade, precoReferencia) {
   const descontoAtualPercent = candidato.precoLista > candidato.preco
     ? arredondar_(((candidato.precoLista - candidato.preco) / candidato.precoLista) * 100)
     : 0;
+  // Minhas Ofertas dá sempre DESCONTO_CORTE_PERCENT (15%) fixo sobre o preço atual,
+  // não a diferença até 15%. Elegível = item que ainda não tem 15%+ de desconto no site.
   const elegivelMinhasOfertas = descontoAtualPercent < DESCONTO_CORTE_PERCENT;
-  const gapDescontoPercent = Math.max(0, DESCONTO_CORTE_PERCENT - descontoAtualPercent);
-  const economiaPotencial = elegivelMinhasOfertas
-    ? arredondar_(candidato.preco * quantidade * (gapDescontoPercent / 100))
-    : 0;
+  const descontoOfertaPercent = elegivelMinhasOfertas ? DESCONTO_CORTE_PERCENT : 0;
+  const economiaPotencial = arredondar_(candidato.preco * quantidade * (descontoOfertaPercent / 100));
   const precoUnit = arredondar_(candidato.preco / (candidato.metrica.valor || 1));
 
   return {
@@ -504,9 +526,10 @@ function serializarCandidato_(candidato, ranking, quantidade, precoReferencia) {
     descontoAtualPercent,
     elegivelMinhasOfertas,
     economiaPotencial,
-    gapMinhasOfertasPercent: elegivelMinhasOfertas ? arredondar_(gapDescontoPercent) : 0,
+    descontoOfertaPercent,
     metricaLabel: candidato.metrica.rotulo,
     metricaTipo: candidato.metrica.tipo,
+    metricaValor: candidato.metrica.valor,
     precoUnitario: precoUnit,
     precoUnitarioLabel: 'R$ ' + precoUnit.toFixed(2).replace('.', ',') + ' ' + candidato.metrica.compareLabel,
     compareLabel: candidato.metrica.compareLabel,

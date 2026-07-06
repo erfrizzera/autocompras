@@ -144,8 +144,8 @@
 
   <section class="secao" id="secao-comprar">
     <div class="toolbar" id="comprar-toolbar" style="display:none">
-      <button class="botao primario" id="botao-gravar-carrinho">Gravar carrinho</button>
-      <button class="botao" id="botao-atualizar-base">Atualizar base de preços</button>
+      <button class="botao primario" id="botao-comprar">Comprar</button>
+      <button class="botao" id="botao-gravar-carrinho">Gravar carrinho</button>
     </div>
     <div id="carrinhos"><p class="vazio">Faça a checagem de preço primeiro.</p></div>
   </section>
@@ -188,7 +188,7 @@
     mudarFase('checagem'); document.getElementById('botao-checar').click();
   });
   document.getElementById('botao-gravar-carrinho').addEventListener('click', gravarUltimoCarrinho);
-  document.getElementById('botao-atualizar-base').addEventListener('click', atualizarBase);
+  document.getElementById('botao-comprar').addEventListener('click', comprarFinalizar);
 
   function mudarFase(fase) {
     document.querySelectorAll('.aba').forEach(function (a) { a.classList.toggle('ativa', a.dataset.fase === fase); });
@@ -415,25 +415,32 @@
       .sort(function (a, b) { return b.pct - a.pct; }).slice(0, 10);
 
     // Insights de troca: só alternativas MAIS BARATAS por unidade, do mesmo tipo de embalagem.
-    var insights = [];
+    // (i) mesma marca, tamanho diferente  |  (ii) marca diferente.
+    var insightsMarca = [], insightsEquiv = [];
     comSel.forEach(function (i) {
-      var atual = i.selecionado, melhor = null;
+      var atual = i.selecionado, mm = null, om = null;
+      var marcaAtual = normalizarBusca(atual.marca || '');
       (i.alternativas || []).forEach(function (alt) {
         if (alt.metricaTipo !== atual.metricaTipo) return;
-        if (alt.precoUnitario < atual.precoUnitario * 0.97 && (!melhor || alt.precoUnitario < melhor.precoUnitario)) melhor = alt;
+        if (alt.precoUnitario >= atual.precoUnitario * 0.97) return;
+        var mesmaMarca = marcaAtual && normalizarBusca(alt.marca || '') === marcaAtual;
+        if (mesmaMarca && alt.metricaValor !== atual.metricaValor) {
+          if (!mm || alt.precoUnitario < mm.precoUnitario) mm = alt;
+        } else if (!mesmaMarca) {
+          if (!om || alt.precoUnitario < om.precoUnitario) om = alt;
+        }
       });
-      if (melhor) {
-        var economiaPct = (atual.precoUnitario - melhor.precoUnitario) / atual.precoUnitario * 100;
-        insights.push({ key: i.key, atual: atual, sugerido: melhor, economiaPct: economiaPct });
-      }
+      if (mm) insightsMarca.push({ key: i.key, atual: atual, sugerido: mm, economiaPct: (atual.precoUnitario - mm.precoUnitario) / atual.precoUnitario * 100 });
+      if (om) insightsEquiv.push({ key: i.key, atual: atual, sugerido: om, economiaPct: (atual.precoUnitario - om.precoUnitario) / atual.precoUnitario * 100 });
     });
-    insights.sort(function (a, b) { return b.economiaPct - a.economiaPct; });
+    insightsMarca.sort(function (a, b) { return b.economiaPct - a.economiaPct; });
+    insightsEquiv.sort(function (a, b) { return b.economiaPct - a.economiaPct; });
 
     return {
       comSel: comSel, comErro: comErro, totalCotado: totalCotado, elegiveis: elegiveis,
       ofertaItens: ofertaItens, normalItens: normalItens, economiaOfertas: economiaOfertas,
       estimadoFinal: round(totalCotado - economiaOfertas), acima: acima, abaixo: abaixo,
-      insights: insights, isOferta: isOferta
+      insightsMarca: insightsMarca, insightsEquiv: insightsEquiv, isOferta: isOferta
     };
   }
 
@@ -454,20 +461,10 @@
         a.comErro.map(function (e) { return escaparHtml(e.nome); }).join(', ') + '</p></div>';
     }
 
-    // INSIGHTS DE TROCA
+    // INSIGHTS DE TROCA — dois tipos
     html += '<h3>Insights de troca</h3>';
-    if (!a.insights.length) {
-      html += '<div class="cartao pad"><p class="vazio">Nenhuma alternativa mais barata por unidade encontrada.</p></div>';
-    } else {
-      html += '<div class="cartao">' + a.insights.map(function (t) {
-        return '<div class="troca">' + miniaturaHtml(t.sugerido.imagem, true) +
-          '<div class="corpo">' +
-          '<p class="de" data-link-atual="' + t.key + '">' + labelTroca(t.atual) + '</p>' +
-          '<p class="para" data-link-sug="' + t.key + '">' + labelTroca(t.sugerido) + '</p>' +
-          '</div><span class="badge baixa" style="margin-right:6px">&minus;' + t.economiaPct.toFixed(0) + '% /' + unidadeCurta(t.atual.compareLabel) + '</span>' +
-          '<button class="botao mini" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
-      }).join('') + '</div>';
-    }
+    html += insightBlocoHtml('Mesma marca, embalagem diferente', a.insightsMarca);
+    html += insightBlocoHtml('Marca equivalente', a.insightsEquiv);
 
     // TOP 10 ACIMA / ABAIXO
     html += '<h3>Comparado ao preço histórico</h3><div class="duplo">' +
@@ -504,33 +501,49 @@
     return String(compareLabel || '').replace('por ', '').replace('litro', 'L');
   }
 
-  // Preço do item no carrinho normal: preço atual e, se em promoção, tabela riscada + % + promo.
-  function precoLinhaHtml(i) {
-    var s = i.selecionado;
-    var promo = s.precoLista > s.preco + 0.001;
-    var atual = promo
-      ? '<span class="promo-antigo">' + formatMoney(s.precoLista) + '</span> <span class="badge alta" style="padding:1px 6px">&minus;' + s.descontoAtualPercent.toFixed(0) + '%</span> ' + formatMoney(s.preco)
-      : formatMoney(s.preco);
-    var ref = i.precoReferencia != null ? ' &middot; última ' + formatMoney(i.precoReferencia) : '';
-    return i.quantidade + '× ' + atual + ref;
+  function insightBlocoHtml(titulo, lista) {
+    var head = '<p class="sub-titulo" style="margin:0 0 6px">' + titulo + '</p>';
+    if (!lista.length) return '<div class="cartao pad">' + head + '<p class="vazio" style="padding:0">Nada aqui.</p></div>';
+    return '<div class="cartao">' + head + lista.map(function (t) {
+      return '<div class="troca">' + miniaturaHtml(t.sugerido.imagem, true) +
+        '<div class="corpo">' +
+        '<p class="de" data-link-atual="' + t.key + '">' + labelTroca(t.atual) + '</p>' +
+        '<p class="para" data-link-sug="' + t.key + '" data-sug-sku="' + t.sugerido.sku + '">' + labelTroca(t.sugerido) + '</p>' +
+        '</div><span class="badge baixa" style="margin-right:6px">&minus;' + t.economiaPct.toFixed(0) + '% /' + unidadeCurta(t.atual.compareLabel) + '</span>' +
+        '<button class="botao mini" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
+    }).join('') + '</div>';
   }
 
-  // Preço do item em Minhas Ofertas: preço atual riscado + % de desconto de Minhas Ofertas + preço estimado.
-  function precoMOHtml(i) {
+  // Linha "Base": compara o preço final com o Preço Base, mostrando % a mais/a menos.
+  function baseLinha(i, precoFinal) {
+    if (i.precoReferencia == null) return '<span style="color:var(--muted)">Base: sem histórico</span>';
+    var diff = (precoFinal - i.precoReferencia) / i.precoReferencia * 100;
+    var cls = diff > 0 ? 'alta' : 'baixa';
+    var sinal = diff > 0 ? '+' : '&minus;';
+    return 'Base ' + formatMoney(i.precoReferencia) + ' <span class="badge ' + cls + '" style="padding:1px 6px">' + sinal + Math.abs(diff).toFixed(0) + '%</span> ' + formatMoney(precoFinal);
+  }
+
+  // Minhas Ofertas: [preço atual] − [15% oferta] [preço após oferta] / [Base] [±%] [preço após oferta]
+  function precosMOHtml(i) {
     var s = i.selecionado;
-    if (s.elegivelMinhasOfertas && s.gapMinhasOfertasPercent > 0) {
-      var precoMO = s.preco * (1 - s.gapMinhasOfertasPercent / 100);
-      return i.quantidade + '× <span class="promo-antigo">' + formatMoney(s.preco) + '</span> ' +
-        '<span class="badge oferta" style="padding:1px 6px">&minus;' + s.gapMinhasOfertasPercent.toFixed(0) + '% oferta</span> ' + formatMoney(precoMO);
-    }
-    return precoLinhaHtml(i);
+    var apos = s.preco * (1 - estado.cortePercent / 100);
+    var l1 = formatMoney(s.preco) + ' &minus; <span class="badge oferta" style="padding:1px 6px">' + estado.cortePercent + '% oferta</span> ' + formatMoney(apos);
+    return '<p class="preco">' + i.quantidade + '× ' + l1 + '</p><p class="preco">' + baseLinha(i, apos) + '</p>';
+  }
+
+  // Carrinho normal: [preço atual] − [% desconto se houver] [preço final] / [Base] [±%] [preço final]
+  function precosNormalHtml(i) {
+    var s = i.selecionado;
+    var promo = s.precoLista > s.preco + 0.001;
+    var l1 = promo
+      ? '<span class="promo-antigo">' + formatMoney(s.precoLista) + '</span> &minus; <span class="badge alta" style="padding:1px 6px">' + s.descontoAtualPercent.toFixed(0) + '%</span> ' + formatMoney(s.preco)
+      : formatMoney(s.preco);
+    return '<p class="preco">' + i.quantidade + '× ' + l1 + '</p><p class="preco">' + baseLinha(i, s.preco) + '</p>';
   }
 
   function totalItemMO(i) {
     var s = i.selecionado;
-    return (s.elegivelMinhasOfertas && s.gapMinhasOfertasPercent > 0)
-      ? s.preco * i.quantidade * (1 - s.gapMinhasOfertasPercent / 100)
-      : s.total;
+    return s.elegivelMinhasOfertas ? s.preco * i.quantidade * (1 - estado.cortePercent / 100) : s.total;
   }
 
   function colunaCarrinhoHtml(titulo, lista, moverLabel, modoMO) {
@@ -538,9 +551,9 @@
     var corpo = lista.length
       ? lista.map(function (i) {
           var s = i.selecionado;
+          var precos = (modoMO && s.elegivelMinhasOfertas) ? precosMOHtml(i) : precosNormalHtml(i);
           return '<div class="linha-item">' + miniaturaHtml(s.imagem, true) +
-            '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
-            '<p class="preco">' + (modoMO ? precoMOHtml(i) : precoLinhaHtml(i)) + '</p></div>' +
+            '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' + precos + '</div>' +
             '<button class="botao mini" data-mover="' + i.key + '">' + moverLabel + '</button></div>';
         }).join('')
       : '<p class="vazio">Vazio.</p>';
@@ -562,7 +575,8 @@
     });
     document.querySelectorAll('[data-link-sug]').forEach(function (el) {
       el.addEventListener('click', function () {
-        var t = estado.agregado.insights.find(function (x) { return x.key === el.dataset.linkSug; });
+        var todos = estado.agregado.insightsMarca.concat(estado.agregado.insightsEquiv);
+        var t = todos.find(function (x) { return x.key === el.dataset.linkSug && x.sugerido.sku === el.dataset.sugSku; });
         if (t) abrirNoZonaSul(t.sugerido.link, t.sugerido.nome);
       });
     });
@@ -713,21 +727,21 @@
     }).gravarUltimoCarrinho(payload);
   }
 
-  function atualizarBase() {
+  function comprarFinalizar() {
     if (!estado.agregado) { alert('Faça a checagem de preço primeiro.'); return; }
     var itens = estado.resultado.itens.filter(function (i) { return i.selecionado; }).map(function (i) {
       return { key: i.key, nome: i.selecionado.nome, preco: i.selecionado.preco, quantidade: i.quantidade };
     });
-    if (!confirm('Atualizar o preço de referência de ' + itens.length + ' itens da Lista Recorrente com os preços cotados agora? O histórico anterior fica guardado.')) return;
-    var b = document.getElementById('botao-atualizar-base');
-    b.disabled = true; b.textContent = 'Atualizando...';
+    if (!confirm('Concluir a compra? O Preço Base de ' + itens.length + ' itens vira o preço de agora, e o preço base anterior vai para o histórico.')) return;
+    var b = document.getElementById('botao-comprar');
+    b.disabled = true; b.textContent = 'Comprando...';
     google.script.run.withSuccessHandler(function (r) {
-      b.disabled = false; b.textContent = 'Atualizar base de preços';
-      alert(r.atualizados + ' itens atualizados na base. Histórico guardado com a data.');
+      b.disabled = false; b.textContent = 'Comprar';
+      alert('Compra concluída. Preço Base atualizado em ' + r.atualizados + ' itens.');
       carregar();
     }).withFailureHandler(function () {
-      b.disabled = false; b.textContent = 'Atualizar base de preços'; alert('Não consegui atualizar agora.');
-    }).atualizarBasePrecos(itens);
+      b.disabled = false; b.textContent = 'Comprar'; alert('Não consegui concluir a compra agora.');
+    }).finalizarCompra(itens);
   }
 
   function escolherConta(item, totais) {
