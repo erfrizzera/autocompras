@@ -5,121 +5,104 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
 <style>
   :root {
-    --surface-0: #F7F6F1;
-    --surface-1: #FFFFFF;
-    --surface-2: #FFFFFF;
-    --text-primary: #24221E;
-    --text-secondary: #6B6A63;
-    --text-muted: #97958C;
-    --border: rgba(36,34,30,0.12);
-    --border-strong: rgba(36,34,30,0.24);
-    --bg-accent: #FAECE7;
-    --text-accent: #993C1D;
-    --fill-accent: #D85A30;
-    --fill-accent-hover: #993C1D;
-    --on-accent: #FFFFFF;
-    --bg-success: #EAF3DE;
-    --text-success: #3B6D11;
-    --bg-warning: #FAEEDA;
-    --text-warning: #854F0B;
-    --radius: 8px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --surface-0: #1B1A17;
-      --surface-1: #242220;
-      --surface-2: #2A2825;
-      --text-primary: #F3F1EA;
-      --text-secondary: #A8A69C;
-      --text-muted: #7C7A72;
-      --border: rgba(255,255,255,0.14);
-      --border-strong: rgba(255,255,255,0.24);
-      --bg-accent: #4A1B0C;
-      --text-accent: #F0997B;
-      --fill-accent: #D85A30;
-      --fill-accent-hover: #F0997B;
-      --on-accent: #1B1A17;
-      --bg-success: #173404;
-      --text-success: #97C459;
-      --bg-warning: #412402;
-      --text-warning: #FAC775;
-    }
+    color-scheme: light;
+    --bg: #edf1f4;
+    --surface: #ffffff;
+    --surface-2: #e4eaee;
+    --line: rgba(0,48,64,0.10);
+    --line-strong: rgba(0,48,64,0.18);
+    --text: #1a2e35;
+    --muted: rgba(0,48,64,0.55);
+    --green: #00546a;
+    --green-strong: #003040;
+    --amber: #8a4f10;
+    --amber-bg: #f6ebdc;
+    --red: #c0392b;
+    --red-bg: #fdeaea;
+    --green-bg: #dcebee;
+    --radius: 10px;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0;
-    background: var(--surface-0);
-    color: var(--text-primary);
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px; line-height: 1.5;
   }
-  .pagina { max-width: 720px; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
-  h1 { font-size: 20px; font-weight: 500; margin: 0; }
-  h2 { font-size: 16px; font-weight: 500; margin: 0 0 0.75rem; }
+  .pagina { max-width: 760px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--green-strong); }
+  h2 { font-size: 16px; font-weight: 600; margin: 0 0 0.75rem; }
+  h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 1.5rem 0 0.5rem; }
   p { margin: 0; }
-  .cabecalho { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .abas { display: flex; gap: 4px; background: var(--surface-1); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 4px; margin-bottom: 1.25rem; }
-  .aba { flex: 1; text-align: center; padding: 8px; border-radius: 6px; font-size: 13px; color: var(--text-secondary); cursor: pointer; user-select: none; }
-  .aba.ativa { background: var(--fill-accent); color: var(--on-accent); }
+  .cabecalho { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 12px; }
+  .abas { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px; margin-bottom: 1.25rem; }
+  .aba { flex: 1; text-align: center; padding: 9px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; user-select: none; }
+  .aba.ativa { background: var(--green); color: #fff; }
   .secao { display: none; }
   .secao.visivel { display: block; }
-  .cartao { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
-  .grupo-titulo { font-size: 13px; color: var(--text-secondary); margin: 1.25rem 0 0.5rem; }
-  .linha-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .cartao { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0.5rem 1.25rem; margin-bottom: 0.75rem; box-shadow: 0 2px 9px rgba(0,48,64,0.05); }
+  .cartao.pad { padding: 1rem 1.25rem; }
+  .linha-item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
   .linha-item:last-child { border-bottom: none; }
-  .miniatura { width: 40px; height: 40px; border-radius: 6px; background: var(--surface-0); object-fit: cover; flex-shrink: 0; }
+  .linha-item[data-abrir] { cursor: pointer; }
+  .linha-item.selecionado .nome { color: var(--green); font-weight: 600; }
+  .miniatura { width: 50px; height: 50px; border-radius: 8px; background: var(--surface-2); object-fit: contain; flex-shrink: 0; }
+  .miniatura.pequena { width: 40px; height: 40px; }
   .info-item { flex: 1; min-width: 0; }
   .info-item p.nome { font-size: 14px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .info-item p.preco { font-size: 13px; color: var(--text-secondary); }
-  .stepper { display: flex; align-items: center; gap: 8px; }
-  .stepper button { width: 28px; height: 28px; border-radius: 50%; border: 0.5px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary); cursor: pointer; }
-  .stepper span { min-width: 18px; text-align: center; font-size: 14px; }
-  .botao-x { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px; }
-  input[type=text], input[type=number] {
-    width: 100%; height: 36px; padding: 0 10px; border-radius: var(--radius);
-    border: 0.5px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary); font-size: 14px;
+  .info-item p.preco { font-size: 12px; color: var(--muted); }
+  .stepper { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .stepper button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); cursor: pointer; font-size: 16px; line-height: 1; }
+  .stepper span { min-width: 20px; text-align: center; font-size: 15px; font-weight: 600; }
+  .botao-x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 4px; flex-shrink: 0; }
+  input[type=text] {
+    width: 100%; height: 40px; padding: 0 12px; border-radius: var(--radius);
+    border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); font-size: 14px;
   }
+  input[type=text]:focus { outline: none; border-color: var(--green); }
   button.botao {
-    height: 36px; padding: 0 14px; border-radius: var(--radius); border: 0.5px solid var(--border-strong);
-    background: var(--surface-1); color: var(--text-primary); font-size: 14px; cursor: pointer;
+    height: 40px; padding: 0 16px; border-radius: var(--radius); border: 1px solid var(--line-strong);
+    background: var(--surface); color: var(--text); font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap;
   }
   button.botao:active { transform: scale(0.98); }
-  button.primario { background: var(--fill-accent); border-color: var(--fill-accent); color: var(--on-accent); }
-  button.primario:hover { background: var(--fill-accent-hover); }
-  .linha-adicionar { display: flex; gap: 8px; margin-top: 1rem; }
-  .badge { font-size: 12px; padding: 2px 8px; border-radius: var(--radius); }
-  .badge.ok { background: var(--bg-success); color: var(--text-success); }
-  .badge.warn { background: var(--bg-warning); color: var(--text-warning); }
-  .badge.accent { background: var(--bg-accent); color: var(--text-accent); }
-  .metrica { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
-  .metrica-item .rotulo { font-size: 12px; color: var(--text-secondary); }
-  .metrica-item .valor { font-size: 22px; font-weight: 500; }
-  .rodape-selo { text-align: right; font-size: 11px; color: var(--text-muted); margin-top: 2rem; }
-  .vazio { color: var(--text-muted); font-size: 13px; padding: 1rem 0; }
-  .carregando { color: var(--text-secondary); font-size: 13px; }
-  a.link-carrinho { color: var(--text-accent); text-decoration: none; font-size: 13px; }
-  .linha-item[data-toggle-item] { cursor: pointer; }
-  .linha-item.selecionado { background: var(--bg-accent); margin: 0 -1.25rem; padding: 10px 1.25rem; border-radius: 8px; }
-  .grupo-cabecalho { display: flex; align-items: center; justify-content: space-between; padding: 10px 2px; cursor: pointer; user-select: none; }
-  .grupo-cabecalho .titulo { font-size: 13px; color: var(--text-secondary); }
-  .grupo-conteudo { display: none; }
-  .grupo-conteudo.aberto { display: block; }
-  .grupo-chevron { font-size: 16px; color: var(--text-muted); transition: transform 0.15s; }
-  .grupo-chevron.aberto { transform: rotate(180deg); }
+  button.primario { background: var(--green); border-color: var(--green); color: #fff; }
+  button.primario:hover { background: var(--green-strong); }
+  a.botao { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .linha-adicionar { display: flex; gap: 8px; margin: 0.5rem 0; }
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.oferta { background: var(--green-bg); color: var(--green); }
+  .badge.desc { background: var(--surface-2); color: var(--muted); }
+  .badge.warn { background: var(--amber-bg); color: var(--amber); }
+  .badge.alta { background: var(--red-bg); color: var(--red); }
   #campo-busca { margin-bottom: 1rem; }
+  .metricas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 0.5rem; }
+  .metrica { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0.9rem 1rem; }
+  .metrica .rotulo { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .metrica .valor { font-size: 22px; font-weight: 700; color: var(--green-strong); }
+  .metrica .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .metrica.destaque { background: var(--green-bg); border-color: transparent; }
+  .vazio { color: var(--muted); font-size: 13px; padding: 1rem 0; }
+  .carregando { color: var(--muted); font-size: 13px; padding: 1rem 0; }
+  a.link-topo { color: var(--green); text-decoration: none; font-size: 13px; font-weight: 500; white-space: nowrap; }
   .barra-fixa {
-    position: fixed; left: 0; right: 0; bottom: 0; max-width: 720px; margin: 0 auto;
-    background: var(--surface-1); border-top: 0.5px solid var(--border); box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
-    padding: 0.75rem 1rem; display: none; align-items: center; justify-content: space-between; gap: 12px;
+    position: fixed; left: 0; right: 0; bottom: 0; max-width: 760px; margin: 0 auto;
+    background: var(--surface); border-top: 1px solid var(--line-strong); box-shadow: 0 -2px 10px rgba(0,48,64,0.08);
+    padding: 0.75rem 1rem; display: none; align-items: center; justify-content: space-between; gap: 12px; z-index: 10;
   }
+  .barra-fixa .cont { font-size: 14px; font-weight: 600; }
+  .troca { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .troca:last-child { border-bottom: none; }
+  .troca .corpo { flex: 1; min-width: 0; font-size: 13px; }
+  .troca .de { color: var(--muted); text-decoration: line-through; }
+  .troca .para { color: var(--green); font-weight: 600; }
+  .cabecalho-conta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .cabecalho-conta .total { font-size: 16px; font-weight: 700; color: var(--green-strong); }
 </style>
 </head>
 <body>
 <div class="pagina">
   <div class="cabecalho">
     <h1>Auto Compras</h1>
-    <a class="link-carrinho" id="link-conta" href="#" target="_blank">Entrar no Zona Sul</a>
+    <a class="link-topo" id="link-conta" href="#" target="_blank">Entrar no Zona Sul</a>
   </div>
 
   <div class="abas">
@@ -129,9 +112,12 @@
   </div>
 
   <section class="secao visivel" id="secao-lista">
-    <input type="text" id="campo-busca" placeholder="Buscar item">
-    <div id="grupos-itens"><p class="carregando">Carregando lista...</p></div>
-    <div class="cartao">
+    <div style="display:flex; gap:8px; margin-bottom:1rem;">
+      <input type="text" id="campo-busca" placeholder="Buscar item" style="margin:0">
+      <button class="botao" id="botao-fotos" title="Busca a foto dos itens que ainda não têm">Buscar fotos</button>
+    </div>
+    <div id="lista-itens"><p class="carregando">Carregando lista...</p></div>
+    <div class="cartao pad">
       <h2>Adicionar produto por link do Zona Sul</h2>
       <div class="linha-adicionar">
         <input type="text" id="campo-link" placeholder="Cole o link do produto">
@@ -141,8 +127,8 @@
   </section>
 
   <section class="secao" id="secao-checagem">
-    <div class="cartao">
-      <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 0.75rem;">Consulta o Zona Sul só agora, na hora em que você pedir.</p>
+    <div class="cartao pad">
+      <p style="color: var(--muted); font-size: 13px; margin-bottom: 0.75rem;">Consulta o Zona Sul agora, só para os itens com quantidade maior que zero.</p>
       <button class="botao primario" id="botao-checar">Checar preços</button>
     </div>
     <div id="resultado-checagem"></div>
@@ -154,32 +140,40 @@
 </div>
 
 <div class="barra-fixa" id="barra-fixa">
-  <span id="barra-fixa-texto"></span>
+  <span class="cont" id="barra-fixa-texto"></span>
   <button class="botao primario" id="botao-ir-checagem">Checar preços</button>
 </div>
 
 <script>
-  window.onerror = function (mensagem, origem, linha, coluna, erro) {
-    var container = document.getElementById('grupos-itens');
-    if (container) {
-      container.innerHTML = '<p class="vazio">Erro JS: ' + mensagem + ' (linha ' + linha + ')</p>';
-    }
+  window.onerror = function (mensagem, origem, linha) {
+    var alvo = document.getElementById('lista-itens');
+    if (alvo) alvo.innerHTML = '<p class="vazio">Erro: ' + mensagem + ' (linha ' + linha + ')</p>';
   };
 
-  var estado = { itens: [], contas: [], resultadoCheagem: null, filtro: '', segmentosAbertos: {} };
+  var estado = {
+    itens: [], contas: [], slotsPorConta: 10, cortePercent: 15,
+    cartBase: '', accountUrl: '#', filtro: '', resultado: null
+  };
 
   document.querySelectorAll('.aba').forEach(function (aba) {
     aba.addEventListener('click', function () { mudarFase(aba.dataset.fase); });
   });
-
   document.getElementById('campo-busca').addEventListener('input', function () {
-    estado.filtro = this.value;
-    renderizarLista();
+    estado.filtro = this.value; renderizarLista();
   });
-
+  document.getElementById('botao-fotos').addEventListener('click', function () {
+    var b = this;
+    b.disabled = true; b.textContent = 'Buscando...';
+    google.script.run.withSuccessHandler(function (r) {
+      b.disabled = false; b.textContent = 'Buscar fotos';
+      carregar();
+    }).withFailureHandler(function () {
+      b.disabled = false; b.textContent = 'Buscar fotos';
+      alert('Não consegui buscar as fotos agora. Tente de novo.');
+    }).preencherImagens();
+  });
   document.getElementById('botao-ir-checagem').addEventListener('click', function () {
-    mudarFase('checagem');
-    document.getElementById('botao-checar').click();
+    mudarFase('checagem'); document.getElementById('botao-checar').click();
   });
 
   function mudarFase(fase) {
@@ -190,264 +184,379 @@
   }
 
   function carregar() {
-    google.script.run.withSuccessHandler(function (resposta) {
-      estado.itens = resposta.itens;
-      estado.contas = resposta.contas;
-      document.getElementById('link-conta').href = resposta.accountUrl;
+    google.script.run.withSuccessHandler(function (r) {
+      estado.itens = r.itens;
+      estado.contas = r.contas;
+      estado.slotsPorConta = r.slotsPorConta;
+      estado.cortePercent = r.cortePercent;
+      estado.cartBase = r.cartBase;
+      estado.accountUrl = r.accountUrl;
+      document.getElementById('link-conta').href = r.accountUrl;
       renderizarLista();
     }).withFailureHandler(function () {
-      document.getElementById('grupos-itens').innerHTML = '<p class="vazio">Não consegui carregar a lista agora.</p>';
+      document.getElementById('lista-itens').innerHTML = '<p class="vazio">Não consegui carregar a lista agora.</p>';
     }).obterEstadoInicial();
   }
 
-  function renderizarLista() {
-    var container = document.getElementById('grupos-itens');
-    var filtro = normalizarBusca(estado.filtro);
-    var todosAtivos = estado.itens.filter(function (item) { return item.status !== 'retirado'; });
-    var retirados = estado.itens.filter(function (item) { return item.status === 'retirado'; });
-    var ativos = filtro
-      ? todosAtivos.filter(function (item) { return normalizarBusca(item.nome).indexOf(filtro) !== -1; })
-      : todosAtivos;
+  // ---------- Fase 1: lista ----------
 
-    var segmentos = {};
-    ativos.forEach(function (item) {
-      var seg = item.segmento || 'Despensa e geral';
-      segmentos[seg] = segmentos[seg] || [];
-      segmentos[seg].push(item);
-    });
+  function renderizarLista() {
+    var container = document.getElementById('lista-itens');
+    var filtro = normalizarBusca(estado.filtro);
+    var ativos = estado.itens.filter(function (i) { return i.status !== 'retirado'; });
+    var retirados = estado.itens.filter(function (i) { return i.status === 'retirado'; });
+    if (filtro) ativos = ativos.filter(function (i) { return normalizarBusca(i.nome).indexOf(filtro) !== -1; });
+
+    ativos.sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
+    retirados.sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
 
     var html = '';
-    if (!todosAtivos.length) {
+    if (!estado.itens.length) {
       html += '<p class="vazio">Nenhum item na lista ainda. Adicione um produto por link abaixo.</p>';
     } else if (!ativos.length) {
       html += '<p class="vazio">Nenhum item encontrado para "' + escaparHtml(estado.filtro) + '".</p>';
+    } else {
+      html += '<div class="cartao">' + ativos.map(function (i) { return linhaItemHtml(i); }).join('') + '</div>';
     }
-
-    Object.keys(segmentos).forEach(function (seg) {
-      var itensSeg = segmentos[seg];
-      var selecionados = itensSeg.filter(function (i) { return (i.quantidadeAtual || 0) > 0; }).length;
-      var aberto = filtro ? true : !!estado.segmentosAbertos[seg];
-      html += grupoHtml(seg, seg, itensSeg, selecionados, aberto);
-    });
-
     if (retirados.length && !filtro) {
-      html += grupoHtml('__retirados', 'Itens retirados', retirados, 0, !!estado.segmentosAbertos.__retirados);
+      html += '<h3>Itens retirados</h3><div class="cartao">' + retirados.map(function (i) { return linhaItemHtml(i); }).join('') + '</div>';
     }
-
     container.innerHTML = html;
     ligarEventosLista();
     atualizarBarraFixa();
   }
 
-  function grupoHtml(chave, titulo, itens, selecionados, aberto) {
-    var resumo = selecionados
-      ? escaparHtml(titulo) + ' &middot; ' + selecionados + ' selecionado' + (selecionados > 1 ? 's' : '')
-      : escaparHtml(titulo);
-
-    return '<div class="grupo-cabecalho" data-toggle-grupo="' + escaparAtributo(chave) + '">' +
-      '<span class="titulo">' + resumo + '</span>' +
-      '<i class="ti ti-chevron-down grupo-chevron' + (aberto ? ' aberto' : '') + '"></i>' +
-      '</div>' +
-      '<div class="cartao grupo-conteudo' + (aberto ? ' aberto' : '') + '">' +
-      itens.map(linhaItemHtml).join('') + '</div>';
-  }
-
   function linhaItemHtml(item) {
-    var precoTexto = item.precoReferencia != null ? 'R$ ' + item.precoReferencia.toFixed(2).replace('.', ',') : 'sem preço de referência';
+    var precoTexto = item.precoReferencia != null ? formatMoney(item.precoReferencia) : 'sem preço de referência';
     var retirado = item.status === 'retirado';
-    var qty = retirado ? 0 : (item.quantidadeAtual != null ? item.quantidadeAtual : 0);
+    var qty = retirado ? 0 : (item.quantidadeAtual || 0);
     var controle = retirado
       ? '<span class="badge warn">Retirado</span>'
       : '<div class="stepper">' +
-        '<button data-acao="menos" data-key="' + item.key + '">-</button>' +
-        '<span id="qtd-' + escaparAtributo(item.key) + '">' + qty + '</span>' +
+        '<button data-acao="menos" data-key="' + item.key + '">&minus;</button>' +
+        '<span>' + qty + '</span>' +
         '<button data-acao="mais" data-key="' + item.key + '">+</button>' +
         '</div>';
     var botaoX = retirado
       ? '<button class="botao-x" data-acao="reativar" data-key="' + item.key + '" title="Reativar"><i class="ti ti-refresh"></i></button>'
       : '<button class="botao-x" data-acao="retirar" data-key="' + item.key + '" title="Retirar"><i class="ti ti-x"></i></button>';
 
-    return '<div class="linha-item' + (qty > 0 ? ' selecionado' : '') + '"' +
-      (retirado ? '' : ' data-toggle-item="' + item.key + '"') + '>' +
-      (item.imagem ? '<img class="miniatura" src="' + item.imagem + '">' : '<div class="miniatura"></div>') +
+    return '<div class="linha-item' + (qty > 0 ? ' selecionado' : '') + '" data-abrir="' + item.key + '">' +
+      miniaturaHtml(item.imagem, false) +
       '<div class="info-item"><p class="nome">' + escaparHtml(item.nome) + '</p><p class="preco">' + precoTexto + '</p></div>' +
       controle + botaoX + '</div>';
   }
 
-  function ligarEventosLista() {
-    document.querySelectorAll('[data-toggle-grupo]').forEach(function (cabecalho) {
-      cabecalho.addEventListener('click', function () {
-        var chave = cabecalho.dataset.toggleGrupo;
-        estado.segmentosAbertos[chave] = !estado.segmentosAbertos[chave];
-        renderizarLista();
-      });
-    });
-    document.querySelectorAll('[data-toggle-item]').forEach(function (linha) {
-      linha.addEventListener('click', function () { alternarSelecao(linha.dataset.toggleItem); });
-    });
-    document.querySelectorAll('[data-acao="mais"]').forEach(function (botao) {
-      botao.addEventListener('click', function (evento) { evento.stopPropagation(); alterarQuantidade(botao.dataset.key, 1); });
-    });
-    document.querySelectorAll('[data-acao="menos"]').forEach(function (botao) {
-      botao.addEventListener('click', function (evento) { evento.stopPropagation(); alterarQuantidade(botao.dataset.key, -1); });
-    });
-    document.querySelectorAll('[data-acao="retirar"]').forEach(function (botao) {
-      botao.addEventListener('click', function (evento) {
-        evento.stopPropagation();
-        if (!confirm('Retirar este item da lista recorrente?')) return;
-        google.script.run.withSuccessHandler(carregar).retirarItem(botao.dataset.key);
-      });
-    });
-    document.querySelectorAll('[data-acao="reativar"]').forEach(function (botao) {
-      botao.addEventListener('click', function (evento) {
-        evento.stopPropagation();
-        google.script.run.withSuccessHandler(carregar).reativarItem(botao.dataset.key);
-      });
-    });
+  function miniaturaHtml(url, pequena) {
+    var cls = 'miniatura' + (pequena ? ' pequena' : '');
+    if (url) return '<img class="' + cls + '" src="' + url + '" onerror="this.style.visibility=\'hidden\'">';
+    return '<div class="' + cls + '"></div>';
   }
 
-  function alternarSelecao(key) {
-    var item = estado.itens.find(function (i) { return i.key === key; });
-    if (!item || item.status === 'retirado') return;
-    var atual = item.quantidadeAtual || 0;
-    item.quantidadeAtual = atual > 0 ? 0 : Math.max(1, item.quantidadeTipica || 1);
-    renderizarLista();
+  function ligarEventosLista() {
+    document.querySelectorAll('#lista-itens [data-abrir]').forEach(function (linha) {
+      linha.addEventListener('click', function () {
+        var item = estado.itens.find(function (i) { return i.key === linha.dataset.abrir; });
+        if (item) abrirNoZonaSul(item.link, item.termoBusca || item.nome);
+      });
+    });
+    document.querySelectorAll('#lista-itens [data-acao="mais"]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); alterarQuantidade(b.dataset.key, 1); });
+    });
+    document.querySelectorAll('#lista-itens [data-acao="menos"]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); alterarQuantidade(b.dataset.key, -1); });
+    });
+    document.querySelectorAll('#lista-itens [data-acao="retirar"]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!confirm('Retirar este item da lista recorrente?')) return;
+        google.script.run.withSuccessHandler(carregar).retirarItem(b.dataset.key);
+      });
+    });
+    document.querySelectorAll('#lista-itens [data-acao="reativar"]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        google.script.run.withSuccessHandler(carregar).reativarItem(b.dataset.key);
+      });
+    });
   }
 
   function alterarQuantidade(key, delta) {
     var item = estado.itens.find(function (i) { return i.key === key; });
     if (!item) return;
-    item.quantidadeAtual = Math.max(0, (item.quantidadeAtual || 0) + delta);
+    var base = item.quantidadeAtual || 0;
+    if (delta > 0 && base === 0) base = Math.max(0, (item.quantidadeTipica || 1) - 1);
+    item.quantidadeAtual = Math.max(0, base + delta);
     renderizarLista();
+  }
+
+  function abrirNoZonaSul(link, termo) {
+    var url = link || ('https://www.zonasul.com.br/' + encodeURIComponent(termo || ''));
+    window.open(url, '_blank');
   }
 
   function atualizarBarraFixa() {
     var barra = document.getElementById('barra-fixa');
     var faseAtual = document.querySelector('.aba.ativa').dataset.fase;
-    var selecionados = estado.itens.filter(function (i) { return i.status !== 'retirado' && (i.quantidadeAtual || 0) > 0; });
-
-    if (faseAtual !== 'lista' || !selecionados.length) {
-      barra.style.display = 'none';
-      return;
-    }
-
+    var n = estado.itens.filter(function (i) { return i.status !== 'retirado' && (i.quantidadeAtual || 0) > 0; }).length;
+    if (faseAtual !== 'lista' || !n) { barra.style.display = 'none'; return; }
     barra.style.display = 'flex';
-    document.getElementById('barra-fixa-texto').textContent =
-      selecionados.length + (selecionados.length > 1 ? ' itens selecionados' : ' item selecionado');
-  }
-
-  function normalizarBusca(texto) {
-    return String(texto || '').normalize('NFD').replace(new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g'), '').toLowerCase();
+    document.getElementById('barra-fixa-texto').textContent = n + (n > 1 ? ' itens selecionados' : ' item selecionado');
   }
 
   document.getElementById('botao-adicionar').addEventListener('click', function () {
     var url = document.getElementById('campo-link').value.trim();
     if (!url) return;
-    this.disabled = true;
-    this.textContent = 'Adicionando...';
     var botao = this;
+    botao.disabled = true; botao.textContent = 'Adicionando...';
     google.script.run.withSuccessHandler(function () {
-      botao.disabled = false;
-      botao.textContent = 'Adicionar';
+      botao.disabled = false; botao.textContent = 'Adicionar';
       document.getElementById('campo-link').value = '';
       carregar();
     }).withFailureHandler(function (erro) {
-      botao.disabled = false;
-      botao.textContent = 'Adicionar';
+      botao.disabled = false; botao.textContent = 'Adicionar';
       alert(erro.message || 'Não consegui adicionar este item.');
     }).adicionarItemPorLink(url);
   });
 
+  // ---------- Fase 2: checagem ----------
+
   document.getElementById('botao-checar').addEventListener('click', function () {
     var solicitados = estado.itens
-      .filter(function (item) { return item.status !== 'retirado' && (item.quantidadeAtual || 0) > 0; })
-      .map(function (item) {
-        return { key: item.key, nome: item.nome, termoBusca: item.termoBusca, precoReferencia: item.precoReferencia, quantidade: item.quantidadeAtual };
+      .filter(function (i) { return i.status !== 'retirado' && (i.quantidadeAtual || 0) > 0; })
+      .map(function (i) {
+        return { key: i.key, nome: i.nome, termoBusca: i.termoBusca, segmento: i.segmento, precoReferencia: i.precoReferencia, quantidade: i.quantidadeAtual };
       });
 
     if (!solicitados.length) {
       document.getElementById('resultado-checagem').innerHTML = '<p class="vazio">Marque a quantidade de pelo menos um item na fase 1.</p>';
       return;
     }
-
     var botao = this;
-    botao.disabled = true;
-    botao.textContent = 'Consultando...';
-    google.script.run.withSuccessHandler(function (resultado) {
-      botao.disabled = false;
-      botao.textContent = 'Checar preços';
-      estado.resultadoCheagem = resultado;
-      renderizarCheagem(resultado);
-      renderizarCarrinhos(resultado);
+    botao.disabled = true; botao.textContent = 'Consultando...';
+    document.getElementById('resultado-checagem').innerHTML = '<p class="carregando">Consultando o Zona Sul, aguarde...</p>';
+    google.script.run.withSuccessHandler(function (r) {
+      botao.disabled = false; botao.textContent = 'Checar preços';
+      estado.resultado = r;
+      renderFase2();
     }).withFailureHandler(function (erro) {
-      botao.disabled = false;
-      botao.textContent = 'Checar preços';
+      botao.disabled = false; botao.textContent = 'Checar preços';
       document.getElementById('resultado-checagem').innerHTML = '<p class="vazio">' + (erro.message || 'Falha consultando o Zona Sul.') + '</p>';
     }).checarPrecos(solicitados);
   });
 
-  function renderizarCheagem(resultado) {
-    var html = '<div class="metrica"><div class="metrica-item"><p class="rotulo">Subtotal</p><p class="valor">R$ ' +
-      resultado.subtotal.toFixed(2).replace('.', ',') + '</p></div>' +
-      '<div class="metrica-item"><p class="rotulo">Minhas ofertas</p><p class="valor">' +
-      resultado.minhasOfertas.contas.reduce(function (n, c) { return n + c.itens.length; }, 0) + ' itens</p></div></div>';
+  function agregar() {
+    var itens = estado.resultado.itens;
+    var comSel = itens.filter(function (i) { return i.selecionado; });
+    var totalCotado = round(comSel.reduce(function (s, i) { return s + i.selecionado.total; }, 0));
+    var elegiveis = comSel.filter(function (i) { return i.selecionado.elegivelMinhasOfertas; });
 
-    resultado.itens.forEach(function (item) {
-      if (item.erro) {
-        html += '<div class="cartao"><p class="nome">' + escaparHtml(item.nome) + '</p><p class="vazio">' + item.erro + '</p></div>';
-        return;
-      }
-      var s = item.selecionado;
-      html += '<div class="cartao">' +
-        '<div class="linha-item" style="border:none; padding:0;">' +
-        (s.imagem ? '<img class="miniatura" src="' + s.imagem + '">' : '<div class="miniatura"></div>') +
-        '<div class="info-item"><p class="nome">' + escaparHtml(s.nome) + '</p><p class="preco">' + s.precoUnitarioLabel + ' &middot; total R$ ' + s.total.toFixed(2).replace('.', ',') + '</p></div>' +
-        (s.elegivelMinhasOfertas ? '<span class="badge accent">Minhas ofertas</span>' : '<span class="badge ok">' + s.descontoAtualPercent.toFixed(0) + '% no site</span>') +
-        '</div></div>';
+    var slotTotal = estado.slotsPorConta * estado.contas.length;
+    var ordenados = elegiveis.slice().sort(function (a, b) {
+      return b.selecionado.economiaPotencial - a.selecionado.economiaPotencial || b.selecionado.total - a.selecionado.total;
+    });
+    var slotted = ordenados.slice(0, slotTotal);
+    var slotKeys = {}; slotted.forEach(function (i) { slotKeys[i.key] = true; });
+    var economiaOfertas = round(slotted.reduce(function (s, i) { return s + i.selecionado.economiaPotencial; }, 0));
+
+    var contasOfertas = estado.contas.map(function (c, idx) {
+      var fatia = slotted.slice(idx * estado.slotsPorConta, idx * estado.slotsPorConta + estado.slotsPorConta);
+      return {
+        key: c.key, label: c.label, itens: fatia,
+        subtotal: round(fatia.reduce(function (s, i) { return s + i.selecionado.total; }, 0)),
+        economia: round(fatia.reduce(function (s, i) { return s + i.selecionado.economiaPotencial; }, 0))
+      };
     });
 
-    document.getElementById('resultado-checagem').innerHTML = html;
+    var totais = {}, porConta = {};
+    estado.contas.forEach(function (c) { totais[c.key] = 0; porConta[c.key] = []; });
+    contasOfertas.forEach(function (co) { co.itens.forEach(function (i) { porConta[co.key].push(i); totais[co.key] += i.selecionado.total; }); });
+    comSel.filter(function (i) { return !slotKeys[i.key]; }).forEach(function (i) {
+      var ck = escolherConta(i, totais);
+      porConta[ck].push(i); totais[ck] += i.selecionado.total;
+    });
+    var carrinhos = estado.contas.map(function (c) {
+      return { key: c.key, label: c.label, itens: porConta[c.key], subtotal: round(totais[c.key]), cartUrl: montarCartUrl(porConta[c.key]) };
+    });
+
+    var acima = comSel.filter(function (i) { return i.precoReferencia != null && i.selecionado.preco > i.precoReferencia; })
+      .map(function (i) { return { item: i, delta: i.selecionado.preco - i.precoReferencia, pct: (i.selecionado.preco - i.precoReferencia) / i.precoReferencia * 100 }; })
+      .sort(function (a, b) { return b.pct - a.pct; })
+      .slice(0, 10);
+
+    var insights = [];
+    comSel.forEach(function (i) {
+      var atual = i.selecionado, melhor = null;
+      (i.alternativas || []).forEach(function (alt) {
+        if (alt.precoUnitario < atual.precoUnitario * 0.97 && (!melhor || alt.precoUnitario < melhor.precoUnitario)) melhor = alt;
+      });
+      if (melhor) insights.push({ key: i.key, atual: atual, sugerido: melhor });
+    });
+
+    return {
+      comSel: comSel, comErro: itens.filter(function (i) { return i.erro; }),
+      totalCotado: totalCotado, elegiveis: elegiveis, economiaOfertas: economiaOfertas,
+      estimadoFinal: round(totalCotado - economiaOfertas), slotted: slotted,
+      contasOfertas: contasOfertas, carrinhos: carrinhos, acima: acima, insights: insights
+    };
   }
 
-  function renderizarCarrinhos(resultado) {
-    var porKey = {};
-    resultado.itens.forEach(function (item) { if (item.selecionado) porKey[item.key] = item; });
+  function escolherConta(item, totais) {
+    var seg = normalizarBusca(item.segmento || '');
+    if (seg.indexOf('pereci') !== -1) return contaKey('dani', totais);
+    if (seg.indexOf('limpeza') !== -1 || seg.indexOf('pesado') !== -1) return contaKey('erico', totais);
+    var chaves = Object.keys(totais);
+    return chaves.reduce(function (m, k) { return totais[k] < totais[m] ? k : m; }, chaves[0]);
+  }
+  function contaKey(preferida, totais) {
+    return totais.hasOwnProperty(preferida) ? preferida : Object.keys(totais)[0];
+  }
 
-    var html = resultado.carrinhos.map(function (carrinho) {
-      var itensHtml = carrinho.itens.map(function (key) {
-        var item = porKey[key];
-        if (!item) return '';
-        return '<div class="linha-item">' +
-          '<div class="info-item"><p class="nome">' + escaparHtml(item.nome) + '</p><p class="preco">R$ ' + item.selecionado.total.toFixed(2).replace('.', ',') + '</p></div>' +
-          '</div>';
-      }).join('');
+  function montarCartUrl(lista) {
+    if (!lista.length) return null;
+    var p = [];
+    lista.forEach(function (i) {
+      p.push('sku=' + encodeURIComponent(i.selecionado.sku));
+      p.push('qty=' + encodeURIComponent(i.quantidade));
+      p.push('seller=' + encodeURIComponent(i.selecionado.sellerId || '1'));
+    });
+    p.push('sc=1');
+    return estado.cartBase + '?' + p.join('&');
+  }
 
-      return '<div class="cartao">' +
-        '<h2>Conta ' + carrinho.label + ' &mdash; R$ ' + carrinho.subtotal.toFixed(2).replace('.', ',') + '</h2>' +
-        itensHtml +
-        (carrinho.cartUrl ? '<a class="botao primario" style="display:inline-flex; align-items:center; margin-top:0.75rem; text-decoration:none;" href="' + carrinho.cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
-        '<div style="margin-top:0.75rem;"><button class="botao" data-acao="registrar" data-conta="' + carrinho.key + '">Registrar compra desta conta</button></div>' +
+  function renderFase2() {
+    var a = agregar();
+    estado.agregado = a;
+    var html = '';
+
+    // (a) Resumo
+    html += '<h3>Resumo</h3>';
+    html += '<div class="metricas">' +
+      metricaHtml('Total cotado', formatMoney(a.totalCotado), a.comSel.length + ' itens') +
+      metricaHtml('Desconto Minhas Ofertas', '&minus;' + formatMoney(a.economiaOfertas), 'estimado', false) +
+      metricaHtml('Estimado final', formatMoney(a.estimadoFinal), 'após descontos', true) +
+      metricaHtml('Elegíveis a desconto', String(a.elegiveis.length), 'desc. atual < ' + estado.cortePercent + '%') +
+      '</div>';
+    if (a.comErro.length) {
+      html += '<div class="cartao pad"><p class="preco" style="font-size:13px;color:var(--muted)">Sem candidato disponível: ' +
+        a.comErro.map(function (e) { return escaparHtml(e.nome); }).join(', ') + '</p></div>';
+    }
+
+    // (b) Carrinhos
+    html += '<h3>Carrinhos por conta</h3>';
+    a.carrinhos.forEach(function (c) {
+      html += '<div class="cartao pad">' +
+        '<div class="cabecalho-conta"><h2 style="margin:0">Conta ' + escaparHtml(c.label) + '</h2><span class="total">' + formatMoney(c.subtotal) + '</span></div>' +
+        '<div style="margin-top:8px">' + c.itens.map(function (i) { return linhaCotacaoHtml(i, true); }).join('') + '</div>' +
+        (c.cartUrl ? '<a class="botao primario" style="margin-top:12px" href="' + c.cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
+        ' <button class="botao" data-registrar="' + c.key + '" style="margin-top:12px">Registrar compra desta conta</button>' +
+        '</div>';
+    });
+
+    // (d) Minhas Ofertas (slots)
+    html += '<h3>Minhas Ofertas &middot; ' + a.slotted.length + '/' + (estado.slotsPorConta * estado.contas.length) + ' slots</h3>';
+    a.contasOfertas.forEach(function (co) {
+      html += '<div class="cartao pad">' +
+        '<div class="cabecalho-conta"><h2 style="margin:0">' + escaparHtml(co.label) + ' &middot; ' + co.itens.length + '/' + estado.slotsPorConta + '</h2>' +
+        '<span class="badge oferta">economia ~' + formatMoney(co.economia) + '</span></div>' +
+        (co.itens.length ? '<div style="margin-top:8px">' + co.itens.map(function (i) { return linhaCotacaoHtml(i, false); }).join('') + '</div>'
+          : '<p class="vazio">Sem itens elegíveis nesta conta.</p>') +
+        '</div>';
+    });
+
+    // (c) Acima do preço histórico
+    html += '<h3>Top 10 acima do preço histórico</h3>';
+    if (!a.acima.length) {
+      html += '<div class="cartao pad"><p class="vazio">Nenhum item acima do preço de referência. Bom momento de compra.</p></div>';
+    } else {
+      html += '<div class="cartao">' + a.acima.map(function (x) {
+        return '<div class="linha-item" data-abrir="' + x.item.key + '">' +
+          miniaturaHtml(x.item.selecionado.imagem, true) +
+          '<div class="info-item"><p class="nome">' + escaparHtml(x.item.selecionado.nome) + '</p>' +
+          '<p class="preco">hoje ' + formatMoney(x.item.selecionado.preco) + ' &middot; ref ' + formatMoney(x.item.precoReferencia) + '</p></div>' +
+          '<span class="badge alta">+' + x.pct.toFixed(0) + '%</span></div>';
+      }).join('') + '</div>';
+    }
+
+    // (e) Insights de troca
+    html += '<h3>Insights de troca</h3>';
+    if (!a.insights.length) {
+      html += '<div class="cartao pad"><p class="vazio">Nenhuma troca vantajosa encontrada.</p></div>';
+    } else {
+      html += '<div class="cartao">' + a.insights.map(function (t) {
+        return '<div class="troca">' +
+          miniaturaHtml(t.sugerido.imagem, true) +
+          '<div class="corpo"><p class="de">' + escaparHtml(t.atual.nome) + ' &middot; ' + t.atual.precoUnitarioLabel + '</p>' +
+          '<p class="para">' + escaparHtml(t.sugerido.nome) + ' &middot; ' + t.sugerido.precoUnitarioLabel + '</p></div>' +
+          '<button class="botao" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
+      }).join('') + '</div>';
+    }
+
+    document.getElementById('resultado-checagem').innerHTML = html;
+    renderCarrinhosFase3(a);
+    ligarEventosFase2();
+  }
+
+  function linhaCotacaoHtml(item, mostrarBadge) {
+    var s = item.selecionado;
+    var badge = '';
+    if (mostrarBadge) {
+      badge = s.elegivelMinhasOfertas
+        ? '<span class="badge oferta">oferta</span>'
+        : '<span class="badge desc">' + s.descontoAtualPercent.toFixed(0) + '% no site</span>';
+    }
+    return '<div class="linha-item" data-abrir="' + item.key + '">' +
+      miniaturaHtml(s.imagem, true) +
+      '<div class="info-item"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
+      '<p class="preco">' + item.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div>' +
+      badge + '</div>';
+  }
+
+  function renderCarrinhosFase3(a) {
+    var html = a.carrinhos.map(function (c) {
+      return '<div class="cartao pad">' +
+        '<div class="cabecalho-conta"><h2 style="margin:0">Conta ' + escaparHtml(c.label) + '</h2><span class="total">' + formatMoney(c.subtotal) + '</span></div>' +
+        '<div style="margin-top:8px">' + c.itens.map(function (i) { return linhaCotacaoHtml(i, false); }).join('') + '</div>' +
+        (c.cartUrl ? '<a class="botao primario" style="margin-top:12px" href="' + c.cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
+        ' <button class="botao" data-registrar="' + c.key + '" style="margin-top:12px">Registrar compra desta conta</button>' +
         '</div>';
     }).join('');
-
     document.getElementById('carrinhos').innerHTML = html;
-    document.querySelectorAll('[data-acao="registrar"]').forEach(function (botao) {
-      botao.addEventListener('click', function () { registrarCompra(botao.dataset.conta); });
+  }
+
+  function ligarEventosFase2() {
+    document.querySelectorAll('#resultado-checagem [data-abrir], #carrinhos [data-abrir]').forEach(function (linha) {
+      linha.addEventListener('click', function () {
+        var i = estado.resultado.itens.find(function (x) { return x.key === linha.dataset.abrir; });
+        if (i && i.selecionado) abrirNoZonaSul(i.selecionado.link, i.nome);
+      });
     });
+    document.querySelectorAll('[data-trocar]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); trocarProduto(b.dataset.trocar, b.dataset.sku); });
+    });
+    document.querySelectorAll('[data-registrar]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); registrarCompra(b.dataset.registrar); });
+    });
+  }
+
+  function trocarProduto(key, sku) {
+    var item = estado.resultado.itens.find(function (i) { return i.key === key; });
+    if (!item) return;
+    var idx = (item.alternativas || []).findIndex(function (a) { return a.sku === sku; });
+    if (idx < 0) return;
+    var novo = item.alternativas[idx];
+    item.alternativas[idx] = item.selecionado;
+    item.selecionado = novo;
+    renderFase2();
   }
 
   function registrarCompra(contaKey) {
-    var carrinho = estado.resultadoCheagem.carrinhos.find(function (c) { return c.key === contaKey; });
-    var porKey = {};
-    estado.resultadoCheagem.itens.forEach(function (item) { if (item.selecionado) porKey[item.key] = item; });
-
-    var itens = carrinho.itens.map(function (key) {
-      var item = porKey[key];
-      return { key: item.key, nome: item.nome, sku: item.selecionado.sku, precoPago: item.selecionado.preco, quantidade: item.quantidade };
+    var carrinho = estado.agregado.carrinhos.find(function (c) { return c.key === contaKey; });
+    if (!carrinho || !carrinho.itens.length) { alert('Nenhum item nesta conta.'); return; }
+    var itens = carrinho.itens.map(function (i) {
+      return { key: i.key, nome: i.selecionado.nome, sku: i.selecionado.sku, precoPago: i.selecionado.preco, quantidade: i.quantidade };
     });
-
     if (!confirm('Registrar ' + itens.length + ' item(ns) da conta ' + carrinho.label + ' como comprados, com o preço da última cotação?')) return;
-
     google.script.run.withSuccessHandler(function () {
       alert('Compra registrada. Os preços de referência foram atualizados.');
       carregar();
@@ -456,14 +565,18 @@
     }).concluirCompra({ conta: contaKey, itens: itens });
   }
 
-  function escaparHtml(texto) {
-    var div = document.createElement('div');
-    div.textContent = texto || '';
-    return div.innerHTML;
-  }
+  // ---------- helpers ----------
 
-  function escaparAtributo(texto) {
-    return String(texto).replace(/[^a-zA-Z0-9_-]/g, '_');
+  function metricaHtml(rotulo, valor, sub, destaque) {
+    return '<div class="metrica' + (destaque ? ' destaque' : '') + '">' +
+      '<p class="rotulo">' + rotulo + '</p><p class="valor">' + valor + '</p>' +
+      (sub ? '<p class="sub">' + sub + '</p>' : '') + '</div>';
+  }
+  function formatMoney(v) { return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+  function round(v) { return Math.round(Number(v) * 100) / 100; }
+  function escaparHtml(t) { var d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
+  function normalizarBusca(t) {
+    return String(t || '').normalize('NFD').replace(new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g'), '').toLowerCase();
   }
 
   carregar();

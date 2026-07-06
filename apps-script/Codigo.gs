@@ -70,8 +70,11 @@ function obterEstadoInicial() {
   return {
     itens: listarItens(),
     contas: CONTAS,
+    slotsPorConta: SLOTS_POR_CONTA,
+    cortePercent: DESCONTO_CORTE_PERCENT,
     loginUrl: LOGIN_URL,
     accountUrl: ACCOUNT_URL,
+    cartBase: CART_BASE,
     segmentos: SEGMENTOS,
   };
 }
@@ -203,18 +206,12 @@ function preencherImagens() {
 function checarPrecos(itensSolicitados) {
   const solicitados = (itensSolicitados || []).filter((item) => Number(item.quantidade) > 0);
   const resultados = solicitados.map((item) => cotarItem_(item));
-  const comSelecao = resultados.filter((resultado) => resultado.selecionado);
-  const subtotal = arredondar_(
-    comSelecao.reduce((soma, resultado) => soma + resultado.selecionado.total, 0),
-  );
-  const minhasOfertas = montarMinhasOfertas_(comSelecao);
-  const carrinhos = montarCarrinhos_(comSelecao, minhasOfertas);
 
+  // A agregação (minhas ofertas, carrinhos, top preços, insights) é feita no
+  // cliente, a partir destes itens crus — assim trocar um produto recalcula tudo
+  // sem precisar consultar o Zona Sul de novo.
   return {
     itens: resultados,
-    subtotal,
-    minhasOfertas,
-    carrinhos,
     geradoEm: new Date().toISOString(),
   };
 }
@@ -238,6 +235,7 @@ function cotarItem_(item) {
     return {
       key: item.key,
       nome: item.nome,
+      segmento: item.segmento || 'Despensa e geral',
       quantidade: item.quantidade,
       precoReferencia: numeroOuNulo_(item.precoReferencia),
       selecionado: null,
@@ -256,10 +254,11 @@ function cotarItem_(item) {
   return {
     key: item.key,
     nome: item.nome,
+    segmento: item.segmento || 'Despensa e geral',
     quantidade: item.quantidade,
     precoReferencia: numeroOuNulo_(item.precoReferencia),
     selecionado: serializarCandidato_(melhor.candidato, melhor.ranking, item.quantidade, item.precoReferencia),
-    alternativas: resto.slice(0, 3).map((entrada) =>
+    alternativas: resto.slice(0, 5).map((entrada) =>
       serializarCandidato_(entrada.candidato, entrada.ranking, item.quantidade, item.precoReferencia),
     ),
   };
@@ -389,7 +388,10 @@ function serializarCandidato_(candidato, ranking, quantidade, precoReferencia) {
     elegivelMinhasOfertas,
     economiaPotencial,
     metricaLabel: candidato.metrica.rotulo,
+    metricaTipo: candidato.metrica.tipo,
+    precoUnitario: arredondar_(candidato.preco / (candidato.metrica.valor || 1)),
     precoUnitarioLabel: 'R$ ' + candidato.preco.toFixed(2).replace('.', ',') + ' ' + candidato.metrica.compareLabel,
+    compareLabel: candidato.metrica.compareLabel,
     link: candidato.link,
     imagem: candidato.imagem,
   };

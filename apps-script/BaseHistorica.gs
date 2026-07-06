@@ -673,6 +673,21 @@ const BASE_HISTORICA = [
     "DataUltimaCompra": "2025-03-27",
     "Status": "ativo",
     "Origem": "historico"
+  },
+  {
+    "Key": "hist:vinho-tinto-argentino-argento-malbec-750ml",
+    "Nome": "Vinho Tinto Argentino Argento Malbec Garrafa 750ml",
+    "TermoBusca": "Vinho Tinto Argentino Argento Malbec Garrafa 750ml",
+    "Segmento": "Pesados e bebidas",
+    "PrecoReferencia": 33.93,
+    "QuantidadeTipica": 1,
+    "DataUltimaCompra": "",
+    "Status": "ativo",
+    "Origem": "historico",
+    "Link": "https://www.zonasul.com.br/vinho-tinto-argentino-argento-malbec-garrafa-750ml-635308/p",
+    "Imagem": "https://zonasul.vteximg.com.br/arquivos/ids/3088920/VF4qT-qqCUAAAAAAAAPKdQ.jpg?v=638085346030430000",
+    "Sku": "11225",
+    "SellerId": "1"
   }
 ]
 ;
