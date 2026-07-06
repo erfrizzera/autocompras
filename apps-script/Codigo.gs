@@ -3,6 +3,7 @@
 
 const ABA_ITENS = 'Itens';
 const ABA_COMPRAS = 'Compras';
+const ABA_LOG = 'LogCarrinho';
 
 const CATALOG_BASE = 'https://www.zonasul.com.br/api/catalog_system/pub/products/search/';
 const CART_BASE = 'https://www.zonasul.com.br/checkout/cart/add';
@@ -34,6 +35,10 @@ const COLUNAS_COMPRAS = [
   'Data', 'Conta', 'ItemKey', 'Nome', 'PrecoPago', 'Quantidade', 'Total', 'Sku',
 ];
 
+const COLUNAS_LOG = [
+  'Data', 'Origem', 'QtdItens', 'Total', 'Resumo',
+];
+
 function doGet() {
   return HtmlService.createTemplateFromFile('App')
     .evaluate()
@@ -51,6 +56,7 @@ function configurarPlanilha() {
   const planilha = SpreadsheetApp.getActiveSpreadsheet();
   criarAbaSeNaoExiste(planilha, ABA_ITENS, COLUNAS_ITENS);
   criarAbaSeNaoExiste(planilha, ABA_COMPRAS, COLUNAS_COMPRAS);
+  criarAbaSeNaoExiste(planilha, ABA_LOG, COLUNAS_LOG);
 }
 
 function criarAbaSeNaoExiste(planilha, nome, cabecalho) {
@@ -76,7 +82,46 @@ function obterEstadoInicial() {
     accountUrl: ACCOUNT_URL,
     cartBase: CART_BASE,
     segmentos: SEGMENTOS,
+    logCarrinho: listarLogCarrinho(),
   };
+}
+
+// ---------- Log de carrinho (histórico de listas/carrinhos gravados) ----------
+
+function listarLogCarrinho() {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  const aba = planilha.getSheetByName(ABA_LOG);
+  if (!aba || aba.getLastRow() < 2) return [];
+  const valores = aba.getDataRange().getValues();
+  const cabecalho = valores[0];
+  const linhas = valores.slice(1)
+    .filter((linha) => linha.some((c) => c !== ''))
+    .map((linha) => {
+      const o = {};
+      cabecalho.forEach((nome, i) => { o[nome] = linha[i]; });
+      return {
+        data: formatarDataHora_(o.Data),
+        origem: o.Origem || '',
+        qtdItens: Number(o.QtdItens) || 0,
+        total: numeroOuNulo_(o.Total),
+        resumo: o.Resumo || '',
+      };
+    });
+  return linhas.reverse().slice(0, 15);
+}
+
+function gravarLogCarrinho(registro) {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  criarAbaSeNaoExiste(planilha, ABA_LOG, COLUNAS_LOG);
+  const aba = planilha.getSheetByName(ABA_LOG);
+  aba.appendRow([
+    new Date(),
+    registro.origem || '',
+    Number(registro.qtdItens) || 0,
+    arredondar_(Number(registro.total) || 0),
+    registro.resumo || '',
+  ]);
+  return { ok: true, logCarrinho: listarLogCarrinho() };
 }
 
 function listarItens() {
@@ -582,6 +627,14 @@ function formatarData_(valor) {
   if (!valor) return null;
   if (Object.prototype.toString.call(valor) === '[object Date]') {
     return Utilities.formatDate(valor, 'America/Sao_Paulo', 'yyyy-MM-dd');
+  }
+  return String(valor);
+}
+
+function formatarDataHora_(valor) {
+  if (!valor) return '';
+  if (Object.prototype.toString.call(valor) === '[object Date]') {
+    return Utilities.formatDate(valor, 'America/Sao_Paulo', 'dd/MM HH:mm');
   }
   return String(valor);
 }

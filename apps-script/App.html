@@ -28,9 +28,9 @@
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     font-size: 15px; line-height: 1.5;
   }
-  .pagina { max-width: 760px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
+  .pagina { max-width: 1080px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
   h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--green-strong); }
-  h2 { font-size: 16px; font-weight: 600; margin: 0 0 0.75rem; }
+  h2 { font-size: 16px; font-weight: 600; margin: 0 0 0.5rem; }
   h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 1.5rem 0 0.5rem; }
   p { margin: 0; }
   .cabecalho { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 12px; }
@@ -66,25 +66,27 @@
   button.botao:active { transform: scale(0.98); }
   button.primario { background: var(--green); border-color: var(--green); color: #fff; }
   button.primario:hover { background: var(--green-strong); }
+  button.mini { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 8px; }
   a.botao { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-  .linha-adicionar { display: flex; gap: 8px; margin: 0.5rem 0; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .toolbar input { flex: 1; min-width: 160px; }
   .badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
   .badge.oferta { background: var(--green-bg); color: var(--green); }
   .badge.desc { background: var(--surface-2); color: var(--muted); }
   .badge.warn { background: var(--amber-bg); color: var(--amber); }
   .badge.alta { background: var(--red-bg); color: var(--red); }
-  #campo-busca { margin-bottom: 1rem; }
+  .badge.baixa { background: var(--green-bg); color: var(--green); }
   .metricas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 0.5rem; }
   .metrica { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0.9rem 1rem; }
   .metrica .rotulo { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
   .metrica .valor { font-size: 22px; font-weight: 700; color: var(--green-strong); }
   .metrica .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .metrica.destaque { background: var(--green-bg); border-color: transparent; }
+  .duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
   .vazio { color: var(--muted); font-size: 13px; padding: 1rem 0; }
   .carregando { color: var(--muted); font-size: 13px; padding: 1rem 0; }
-  a.link-topo { color: var(--green); text-decoration: none; font-size: 13px; font-weight: 500; white-space: nowrap; }
   .barra-fixa {
-    position: fixed; left: 0; right: 0; bottom: 0; max-width: 760px; margin: 0 auto;
+    position: fixed; left: 0; right: 0; bottom: 0; max-width: 1080px; margin: 0 auto;
     background: var(--surface); border-top: 1px solid var(--line-strong); box-shadow: 0 -2px 10px rgba(0,48,64,0.08);
     padding: 0.75rem 1rem; display: none; align-items: center; justify-content: space-between; gap: 12px; z-index: 10;
   }
@@ -92,17 +94,20 @@
   .troca { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
   .troca:last-child { border-bottom: none; }
   .troca .corpo { flex: 1; min-width: 0; font-size: 13px; }
-  .troca .de { color: var(--muted); text-decoration: line-through; }
-  .troca .para { color: var(--green); font-weight: 600; }
+  .troca .de { color: var(--muted); text-decoration: line-through; cursor: pointer; }
+  .troca .para { color: var(--green); font-weight: 600; cursor: pointer; }
   .cabecalho-conta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
   .cabecalho-conta .total { font-size: 16px; font-weight: 700; color: var(--green-strong); }
+  .log-linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .log-linha:last-child { border-bottom: none; }
+  .log-linha .quando { color: var(--muted); }
+  .sub-titulo { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin: 10px 0 4px; }
 </style>
 </head>
 <body>
 <div class="pagina">
   <div class="cabecalho">
     <h1>Auto Compras</h1>
-    <a class="link-topo" id="link-conta" href="#" target="_blank">Entrar no Zona Sul</a>
   </div>
 
   <div class="abas">
@@ -112,24 +117,29 @@
   </div>
 
   <section class="secao visivel" id="secao-lista">
-    <div style="display:flex; gap:8px; margin-bottom:1rem;">
-      <input type="text" id="campo-busca" placeholder="Buscar item" style="margin:0">
-      <button class="botao" id="botao-fotos" title="Busca a foto dos itens que ainda não têm">Buscar fotos</button>
-    </div>
-    <div id="lista-itens"><p class="carregando">Carregando lista...</p></div>
     <div class="cartao pad">
       <h2>Adicionar produto por link do Zona Sul</h2>
-      <div class="linha-adicionar">
+      <div class="toolbar" style="margin:0">
         <input type="text" id="campo-link" placeholder="Cole o link do produto">
         <button class="botao primario" id="botao-adicionar">Adicionar</button>
       </div>
     </div>
+
+    <div id="log-carrinho"></div>
+
+    <div class="toolbar">
+      <input type="text" id="campo-busca" placeholder="Buscar item">
+      <button class="botao" id="botao-atualizar">Atualizar lista</button>
+      <button class="botao primario" id="botao-gravar-lista">Gravar lista</button>
+    </div>
+
+    <div id="lista-itens"><p class="carregando">Carregando lista...</p></div>
   </section>
 
   <section class="secao" id="secao-checagem">
-    <div class="cartao pad">
-      <p style="color: var(--muted); font-size: 13px; margin-bottom: 0.75rem;">Consulta o Zona Sul agora, só para os itens com quantidade maior que zero.</p>
+    <div class="toolbar">
       <button class="botao primario" id="botao-checar">Checar preços</button>
+      <button class="botao" id="botao-gravar-carrinho">Gravar carrinho</button>
     </div>
     <div id="resultado-checagem"></div>
   </section>
@@ -145,14 +155,15 @@
 </div>
 
 <script>
-  window.onerror = function (mensagem, origem, linha) {
+  window.onerror = function (m, o, l) {
     var alvo = document.getElementById('lista-itens');
-    if (alvo) alvo.innerHTML = '<p class="vazio">Erro: ' + mensagem + ' (linha ' + linha + ')</p>';
+    if (alvo) alvo.innerHTML = '<p class="vazio">Erro: ' + m + ' (linha ' + l + ')</p>';
   };
 
   var estado = {
     itens: [], contas: [], slotsPorConta: 10, cortePercent: 15,
-    cartBase: '', accountUrl: '#', filtro: '', resultado: null
+    cartBase: '', accountUrl: '#', filtro: '', resultado: null,
+    logCarrinho: [], overridesOferta: {}
   };
 
   document.querySelectorAll('.aba').forEach(function (aba) {
@@ -161,17 +172,16 @@
   document.getElementById('campo-busca').addEventListener('input', function () {
     estado.filtro = this.value; renderizarLista();
   });
-  document.getElementById('botao-fotos').addEventListener('click', function () {
-    var b = this;
-    b.disabled = true; b.textContent = 'Buscando...';
-    google.script.run.withSuccessHandler(function (r) {
-      b.disabled = false; b.textContent = 'Buscar fotos';
-      carregar();
+  document.getElementById('botao-atualizar').addEventListener('click', function () {
+    var b = this; b.disabled = true; b.textContent = 'Atualizando...';
+    google.script.run.withSuccessHandler(function () {
+      b.disabled = false; b.textContent = 'Atualizar lista'; carregar();
     }).withFailureHandler(function () {
-      b.disabled = false; b.textContent = 'Buscar fotos';
-      alert('Não consegui buscar as fotos agora. Tente de novo.');
+      b.disabled = false; b.textContent = 'Atualizar lista'; alert('Não consegui atualizar agora.');
     }).preencherImagens();
   });
+  document.getElementById('botao-gravar-lista').addEventListener('click', gravarLista);
+  document.getElementById('botao-gravar-carrinho').addEventListener('click', gravarCarrinho);
   document.getElementById('botao-ir-checagem').addEventListener('click', function () {
     mudarFase('checagem'); document.getElementById('botao-checar').click();
   });
@@ -180,19 +190,17 @@
     document.querySelectorAll('.aba').forEach(function (a) { a.classList.toggle('ativa', a.dataset.fase === fase); });
     document.querySelectorAll('.secao').forEach(function (s) { s.classList.remove('visivel'); });
     document.getElementById('secao-' + fase).classList.add('visivel');
+    if (fase === 'comprar') renderComprar();
     atualizarBarraFixa();
   }
 
   function carregar() {
     google.script.run.withSuccessHandler(function (r) {
-      estado.itens = r.itens;
-      estado.contas = r.contas;
-      estado.slotsPorConta = r.slotsPorConta;
-      estado.cortePercent = r.cortePercent;
-      estado.cartBase = r.cartBase;
-      estado.accountUrl = r.accountUrl;
-      document.getElementById('link-conta').href = r.accountUrl;
-      renderizarLista();
+      estado.itens = r.itens; estado.contas = r.contas;
+      estado.slotsPorConta = r.slotsPorConta; estado.cortePercent = r.cortePercent;
+      estado.cartBase = r.cartBase; estado.accountUrl = r.accountUrl;
+      estado.logCarrinho = r.logCarrinho || [];
+      renderizarLista(); renderLog();
     }).withFailureHandler(function () {
       document.getElementById('lista-itens').innerHTML = '<p class="vazio">Não consegui carregar a lista agora.</p>';
     }).obterEstadoInicial();
@@ -200,26 +208,35 @@
 
   // ---------- Fase 1: lista ----------
 
+  function renderLog() {
+    var el = document.getElementById('log-carrinho');
+    if (!estado.logCarrinho.length) { el.innerHTML = ''; return; }
+    el.innerHTML = '<h3>Carrinhos gravados</h3><div class="cartao pad">' +
+      estado.logCarrinho.map(function (l) {
+        return '<div class="log-linha"><span class="quando">' + escaparHtml(l.data) + ' &middot; ' + escaparHtml(l.origem) + '</span>' +
+          '<span>' + l.qtdItens + ' itens &middot; ' + (l.total != null ? formatMoney(l.total) : '—') + '</span></div>';
+      }).join('') + '</div>';
+  }
+
   function renderizarLista() {
     var container = document.getElementById('lista-itens');
     var filtro = normalizarBusca(estado.filtro);
     var ativos = estado.itens.filter(function (i) { return i.status !== 'retirado'; });
     var retirados = estado.itens.filter(function (i) { return i.status === 'retirado'; });
     if (filtro) ativos = ativos.filter(function (i) { return normalizarBusca(i.nome).indexOf(filtro) !== -1; });
-
     ativos.sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
     retirados.sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
 
     var html = '';
     if (!estado.itens.length) {
-      html += '<p class="vazio">Nenhum item na lista ainda. Adicione um produto por link abaixo.</p>';
+      html += '<p class="vazio">Nenhum item na lista ainda. Adicione um produto por link acima.</p>';
     } else if (!ativos.length) {
       html += '<p class="vazio">Nenhum item encontrado para "' + escaparHtml(estado.filtro) + '".</p>';
     } else {
-      html += '<div class="cartao">' + ativos.map(function (i) { return linhaItemHtml(i); }).join('') + '</div>';
+      html += '<h3>Lista Recorrente</h3><div class="cartao">' + ativos.map(linhaItemHtml).join('') + '</div>';
     }
     if (retirados.length && !filtro) {
-      html += '<h3>Itens retirados</h3><div class="cartao">' + retirados.map(function (i) { return linhaItemHtml(i); }).join('') + '</div>';
+      html += '<h3>Itens retirados</h3><div class="cartao">' + retirados.map(linhaItemHtml).join('') + '</div>';
     }
     container.innerHTML = html;
     ligarEventosLista();
@@ -237,14 +254,14 @@
         '<span>' + qty + '</span>' +
         '<button data-acao="mais" data-key="' + item.key + '">+</button>' +
         '</div>';
-    var botaoX = retirado
-      ? '<button class="botao-x" data-acao="reativar" data-key="' + item.key + '" title="Reativar"><i class="ti ti-refresh"></i></button>'
-      : '<button class="botao-x" data-acao="retirar" data-key="' + item.key + '" title="Retirar"><i class="ti ti-x"></i></button>';
+    var botao = retirado
+      ? '<button class="botao-x" data-acao="reativar" data-key="' + item.key + '" title="Voltar para a lista"><i class="ti ti-arrow-back-up"></i></button>'
+      : '<button class="botao-x" data-acao="retirar" data-key="' + item.key + '" title="Retirar da lista recorrente"><i class="ti ti-trash"></i></button>';
 
     return '<div class="linha-item' + (qty > 0 ? ' selecionado' : '') + '" data-abrir="' + item.key + '">' +
       miniaturaHtml(item.imagem, false) +
       '<div class="info-item"><p class="nome">' + escaparHtml(item.nome) + '</p><p class="preco">' + precoTexto + '</p></div>' +
-      controle + botaoX + '</div>';
+      controle + botao + '</div>';
   }
 
   function miniaturaHtml(url, pequena) {
@@ -284,9 +301,7 @@
   function alterarQuantidade(key, delta) {
     var item = estado.itens.find(function (i) { return i.key === key; });
     if (!item) return;
-    var base = item.quantidadeAtual || 0;
-    if (delta > 0 && base === 0) base = Math.max(0, (item.quantidadeTipica || 1) - 1);
-    item.quantidadeAtual = Math.max(0, base + delta);
+    item.quantidadeAtual = Math.max(0, (item.quantidadeAtual || 0) + delta);
     renderizarLista();
   }
 
@@ -307,37 +322,50 @@
   document.getElementById('botao-adicionar').addEventListener('click', function () {
     var url = document.getElementById('campo-link').value.trim();
     if (!url) return;
-    var botao = this;
-    botao.disabled = true; botao.textContent = 'Adicionando...';
+    var botao = this; botao.disabled = true; botao.textContent = 'Adicionando...';
     google.script.run.withSuccessHandler(function () {
       botao.disabled = false; botao.textContent = 'Adicionar';
-      document.getElementById('campo-link').value = '';
-      carregar();
+      document.getElementById('campo-link').value = ''; carregar();
     }).withFailureHandler(function (erro) {
       botao.disabled = false; botao.textContent = 'Adicionar';
       alert(erro.message || 'Não consegui adicionar este item.');
     }).adicionarItemPorLink(url);
   });
 
+  function selecionadosLista() {
+    return estado.itens.filter(function (i) { return i.status !== 'retirado' && (i.quantidadeAtual || 0) > 0; });
+  }
+
+  function gravarLista() {
+    var sel = selecionadosLista();
+    if (!sel.length) { alert('Marque a quantidade de pelo menos um item.'); return; }
+    var total = round(sel.reduce(function (s, i) { return s + (i.precoReferencia || 0) * i.quantidadeAtual; }, 0));
+    var resumo = sel.slice(0, 6).map(function (i) { return i.quantidadeAtual + '× ' + i.nome; }).join(', ');
+    var b = document.getElementById('botao-gravar-lista');
+    b.disabled = true; b.textContent = 'Gravando...';
+    google.script.run.withSuccessHandler(function (r) {
+      b.disabled = false; b.textContent = 'Gravar lista';
+      estado.logCarrinho = r.logCarrinho || []; renderLog();
+    }).withFailureHandler(function () {
+      b.disabled = false; b.textContent = 'Gravar lista'; alert('Não consegui gravar agora.');
+    }).gravarLogCarrinho({ origem: 'Lista', qtdItens: sel.length, total: total, resumo: resumo });
+  }
+
   // ---------- Fase 2: checagem ----------
 
   document.getElementById('botao-checar').addEventListener('click', function () {
-    var solicitados = estado.itens
-      .filter(function (i) { return i.status !== 'retirado' && (i.quantidadeAtual || 0) > 0; })
-      .map(function (i) {
-        return { key: i.key, nome: i.nome, termoBusca: i.termoBusca, segmento: i.segmento, precoReferencia: i.precoReferencia, quantidade: i.quantidadeAtual };
-      });
-
+    var solicitados = selecionadosLista().map(function (i) {
+      return { key: i.key, nome: i.nome, termoBusca: i.termoBusca, segmento: i.segmento, precoReferencia: i.precoReferencia, quantidade: i.quantidadeAtual };
+    });
     if (!solicitados.length) {
       document.getElementById('resultado-checagem').innerHTML = '<p class="vazio">Marque a quantidade de pelo menos um item na fase 1.</p>';
       return;
     }
-    var botao = this;
-    botao.disabled = true; botao.textContent = 'Consultando...';
+    var botao = this; botao.disabled = true; botao.textContent = 'Consultando...';
     document.getElementById('resultado-checagem').innerHTML = '<p class="carregando">Consultando o Zona Sul, aguarde...</p>';
     google.script.run.withSuccessHandler(function (r) {
-      botao.disabled = false; botao.textContent = 'Checar preços';
-      estado.resultado = r;
+      botao.disabled = false; botao.textContent = 'Recarregar preços';
+      estado.resultado = r; estado.overridesOferta = {};
       renderFase2();
     }).withFailureHandler(function (erro) {
       botao.disabled = false; botao.textContent = 'Checar preços';
@@ -348,41 +376,33 @@
   function agregar() {
     var itens = estado.resultado.itens;
     var comSel = itens.filter(function (i) { return i.selecionado; });
+    var comErro = itens.filter(function (i) { return i.erro; });
     var totalCotado = round(comSel.reduce(function (s, i) { return s + i.selecionado.total; }, 0));
     var elegiveis = comSel.filter(function (i) { return i.selecionado.elegivelMinhasOfertas; });
 
-    var slotTotal = estado.slotsPorConta * estado.contas.length;
-    var ordenados = elegiveis.slice().sort(function (a, b) {
+    var elegSorted = elegiveis.slice().sort(function (a, b) {
       return b.selecionado.economiaPotencial - a.selecionado.economiaPotencial || b.selecionado.total - a.selecionado.total;
     });
-    var slotted = ordenados.slice(0, slotTotal);
-    var slotKeys = {}; slotted.forEach(function (i) { slotKeys[i.key] = true; });
-    var economiaOfertas = round(slotted.reduce(function (s, i) { return s + i.selecionado.economiaPotencial; }, 0));
+    var slotTotal = estado.slotsPorConta * estado.contas.length;
+    var defaultOferta = {}; elegSorted.slice(0, slotTotal).forEach(function (i) { defaultOferta[i.key] = true; });
+    function isOferta(i) {
+      var ov = estado.overridesOferta[i.key];
+      if (ov === 'oferta') return true;
+      if (ov === 'normal') return false;
+      return !!defaultOferta[i.key];
+    }
+    var ofertaItens = comSel.filter(isOferta);
+    var normalItens = comSel.filter(function (i) { return !isOferta(i); });
+    var economiaOfertas = round(ofertaItens.filter(function (i) { return i.selecionado.elegivelMinhasOfertas; })
+      .reduce(function (s, i) { return s + i.selecionado.economiaPotencial; }, 0));
 
-    var contasOfertas = estado.contas.map(function (c, idx) {
-      var fatia = slotted.slice(idx * estado.slotsPorConta, idx * estado.slotsPorConta + estado.slotsPorConta);
-      return {
-        key: c.key, label: c.label, itens: fatia,
-        subtotal: round(fatia.reduce(function (s, i) { return s + i.selecionado.total; }, 0)),
-        economia: round(fatia.reduce(function (s, i) { return s + i.selecionado.economiaPotencial; }, 0))
-      };
-    });
-
-    var totais = {}, porConta = {};
-    estado.contas.forEach(function (c) { totais[c.key] = 0; porConta[c.key] = []; });
-    contasOfertas.forEach(function (co) { co.itens.forEach(function (i) { porConta[co.key].push(i); totais[co.key] += i.selecionado.total; }); });
-    comSel.filter(function (i) { return !slotKeys[i.key]; }).forEach(function (i) {
-      var ck = escolherConta(i, totais);
-      porConta[ck].push(i); totais[ck] += i.selecionado.total;
-    });
-    var carrinhos = estado.contas.map(function (c) {
-      return { key: c.key, label: c.label, itens: porConta[c.key], subtotal: round(totais[c.key]), cartUrl: montarCartUrl(porConta[c.key]) };
-    });
-
-    var acima = comSel.filter(function (i) { return i.precoReferencia != null && i.selecionado.preco > i.precoReferencia; })
-      .map(function (i) { return { item: i, delta: i.selecionado.preco - i.precoReferencia, pct: (i.selecionado.preco - i.precoReferencia) / i.precoReferencia * 100 }; })
-      .sort(function (a, b) { return b.pct - a.pct; })
-      .slice(0, 10);
+    var comRef = comSel.filter(function (i) { return i.precoReferencia != null; });
+    var acima = comRef.filter(function (i) { return i.selecionado.preco > i.precoReferencia; })
+      .map(function (i) { return { item: i, pct: (i.selecionado.preco - i.precoReferencia) / i.precoReferencia * 100 }; })
+      .sort(function (a, b) { return b.pct - a.pct; }).slice(0, 10);
+    var abaixo = comRef.filter(function (i) { return i.selecionado.preco < i.precoReferencia; })
+      .map(function (i) { return { item: i, pct: (i.precoReferencia - i.selecionado.preco) / i.precoReferencia * 100 }; })
+      .sort(function (a, b) { return b.pct - a.pct; }).slice(0, 10);
 
     var insights = [];
     comSel.forEach(function (i) {
@@ -394,22 +414,237 @@
     });
 
     return {
-      comSel: comSel, comErro: itens.filter(function (i) { return i.erro; }),
-      totalCotado: totalCotado, elegiveis: elegiveis, economiaOfertas: economiaOfertas,
-      estimadoFinal: round(totalCotado - economiaOfertas), slotted: slotted,
-      contasOfertas: contasOfertas, carrinhos: carrinhos, acima: acima, insights: insights
+      comSel: comSel, comErro: comErro, totalCotado: totalCotado, elegiveis: elegiveis,
+      ofertaItens: ofertaItens, normalItens: normalItens, economiaOfertas: economiaOfertas,
+      estimadoFinal: round(totalCotado - economiaOfertas), acima: acima, abaixo: abaixo,
+      insights: insights, isOferta: isOferta
     };
+  }
+
+  function renderFase2() {
+    var a = agregar();
+    estado.agregado = a;
+    var slotTotal = estado.slotsPorConta * estado.contas.length;
+    var html = '';
+
+    // RESUMO
+    html += '<h3>Resumo</h3><div class="metricas">' +
+      metricaHtml('Total cotado', formatMoney(a.totalCotado), a.comSel.length + ' itens') +
+      metricaHtml('Desconto Minhas Ofertas', '&minus;' + formatMoney(a.economiaOfertas), 'estimado') +
+      metricaHtml('Estimado final', formatMoney(a.estimadoFinal), 'após descontos', true) +
+      metricaHtml('Elegíveis a desconto', String(a.elegiveis.length), 'desc. atual < ' + estado.cortePercent + '%') +
+      '</div>';
+    if (a.comErro.length) {
+      html += '<div class="cartao pad"><p class="preco" style="font-size:13px;color:var(--muted)">Sem produto disponível no Zona Sul agora: ' +
+        a.comErro.map(function (e) { return escaparHtml(e.nome); }).join(', ') + '</p></div>';
+    }
+
+    // INSIGHTS DE TROCA
+    html += '<h3>Insights de troca</h3>';
+    if (!a.insights.length) {
+      html += '<div class="cartao pad"><p class="vazio">Nenhuma troca vantajosa encontrada.</p></div>';
+    } else {
+      html += '<div class="cartao">' + a.insights.map(function (t) {
+        return '<div class="troca">' + miniaturaHtml(t.sugerido.imagem, true) +
+          '<div class="corpo">' +
+          '<p class="de" data-link-atual="' + t.key + '">' + escaparHtml(t.atual.nome) + ' &middot; ' + t.atual.precoUnitarioLabel + '</p>' +
+          '<p class="para" data-link-sug="' + t.key + '">' + escaparHtml(t.sugerido.nome) + ' &middot; ' + t.sugerido.precoUnitarioLabel + '</p>' +
+          '</div><button class="botao mini" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
+      }).join('') + '</div>';
+    }
+
+    // TOP 10 ACIMA / ABAIXO
+    html += '<h3>Comparado ao preço histórico</h3><div class="duplo">' +
+      colunaTopHtml('Top 10 acima', a.acima, 'alta', '+') +
+      colunaTopHtml('Top 10 abaixo', a.abaixo, 'baixa', '&minus;') +
+      '</div>';
+
+    // CARRINHOS: MINHAS OFERTAS x NORMAL
+    var excedido = a.ofertaItens.length > slotTotal;
+    html += '<h3>Carrinhos &middot; Minhas Ofertas ' + a.ofertaItens.length + '/' + slotTotal +
+      (excedido ? ' <span class="badge warn">acima de ' + slotTotal + '</span>' : '') + '</h3>';
+    html += '<div class="duplo">' +
+      colunaCarrinhoHtml('Minhas Ofertas', a.ofertaItens, 'normal') +
+      colunaCarrinhoHtml('Carrinho normal', a.normalItens, 'oferta') +
+      '</div>';
+
+    document.getElementById('resultado-checagem').innerHTML = html;
+    ligarEventosFase2();
+  }
+
+  function colunaTopHtml(titulo, lista, badgeCls, sinal) {
+    var corpo = lista.length
+      ? lista.map(function (x) {
+          return '<div class="linha-item" data-abrir="' + x.item.key + '">' + miniaturaHtml(x.item.selecionado.imagem, true) +
+            '<div class="info-item"><p class="nome">' + escaparHtml(x.item.selecionado.nome) + '</p>' +
+            '<p class="preco">hoje ' + formatMoney(x.item.selecionado.preco) + ' &middot; ref ' + formatMoney(x.item.precoReferencia) + '</p></div>' +
+            '<span class="badge ' + badgeCls + '">' + sinal + x.pct.toFixed(0) + '%</span></div>';
+        }).join('')
+      : '<p class="vazio">Nada aqui.</p>';
+    return '<div class="cartao"><h2>' + titulo + '</h2>' + corpo + '</div>';
+  }
+
+  function colunaCarrinhoHtml(titulo, lista, destino) {
+    var total = round(lista.reduce(function (s, i) { return s + i.selecionado.total; }, 0));
+    var acao = destino === 'oferta' ? 'ti-arrow-left' : 'ti-arrow-right';
+    var corpo = lista.length
+      ? lista.map(function (i) {
+          var s = i.selecionado;
+          return '<div class="linha-item">' + miniaturaHtml(s.imagem, true) +
+            '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
+            '<p class="preco">' + i.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div>' +
+            '<button class="botao-x" data-mover="' + i.key + '" title="Mover para o outro carrinho"><i class="ti ' + acao + '"></i></button></div>';
+        }).join('')
+      : '<p class="vazio">Vazio.</p>';
+    return '<div class="cartao"><div class="cabecalho-conta"><h2 style="margin:0">' + titulo + '</h2><span class="total">' + formatMoney(total) + '</span></div>' + corpo + '</div>';
+  }
+
+  function ligarEventosFase2() {
+    document.querySelectorAll('#resultado-checagem [data-abrir]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var i = estado.resultado.itens.find(function (x) { return x.key === el.dataset.abrir; });
+        if (i && i.selecionado) abrirNoZonaSul(i.selecionado.link, i.nome);
+      });
+    });
+    document.querySelectorAll('[data-link-atual]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var i = estado.resultado.itens.find(function (x) { return x.key === el.dataset.linkAtual; });
+        if (i && i.selecionado) abrirNoZonaSul(i.selecionado.link, i.nome);
+      });
+    });
+    document.querySelectorAll('[data-link-sug]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var i = estado.resultado.itens.find(function (x) { return x.key === el.dataset.linkSug; });
+        var t = estado.agregado.insights.find(function (x) { return x.key === el.dataset.linkSug; });
+        if (t) abrirNoZonaSul(t.sugerido.link, t.sugerido.nome);
+      });
+    });
+    document.querySelectorAll('[data-trocar]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); trocarProduto(b.dataset.trocar, b.dataset.sku); });
+    });
+    document.querySelectorAll('[data-mover]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); moverCarrinho(b.dataset.mover); });
+    });
+  }
+
+  function moverCarrinho(key) {
+    var item = estado.resultado.itens.find(function (i) { return i.key === key; });
+    if (!item) return;
+    var atual = estado.agregado.isOferta(item);
+    estado.overridesOferta[key] = atual ? 'normal' : 'oferta';
+    renderFase2();
+  }
+
+  function trocarProduto(key, sku) {
+    var item = estado.resultado.itens.find(function (i) { return i.key === key; });
+    if (!item) return;
+    var idx = (item.alternativas || []).findIndex(function (a) { return a.sku === sku; });
+    if (idx < 0) return;
+    var novo = item.alternativas[idx];
+    item.alternativas[idx] = item.selecionado;
+    item.selecionado = novo;
+    renderFase2();
+  }
+
+  function gravarCarrinho() {
+    if (!estado.agregado) { alert('Faça a checagem de preço primeiro.'); return; }
+    var a = estado.agregado;
+    var resumo = a.ofertaItens.length + ' em Minhas Ofertas, ' + a.normalItens.length + ' no carrinho normal';
+    var b = document.getElementById('botao-gravar-carrinho');
+    b.disabled = true; b.textContent = 'Gravando...';
+    google.script.run.withSuccessHandler(function (r) {
+      b.disabled = false; b.textContent = 'Gravar carrinho';
+      estado.logCarrinho = r.logCarrinho || []; renderLog();
+      alert('Carrinho gravado no histórico.');
+    }).withFailureHandler(function () {
+      b.disabled = false; b.textContent = 'Gravar carrinho'; alert('Não consegui gravar agora.');
+    }).gravarLogCarrinho({ origem: 'Checagem', qtdItens: a.comSel.length, total: a.totalCotado, resumo: resumo });
+  }
+
+  // ---------- Fase 3: comprar (Erico / Dani) ----------
+
+  function renderComprar() {
+    if (!estado.agregado) {
+      document.getElementById('carrinhos').innerHTML = '<p class="vazio">Faça a checagem de preço primeiro.</p>';
+      return;
+    }
+    var a = estado.agregado;
+    var slots = estado.slotsPorConta;
+    var ofertaSorted = a.ofertaItens.slice().sort(function (x, y) { return y.selecionado.economiaPotencial - x.selecionado.economiaPotencial; });
+
+    var ofertaPorConta = {}, totais = {}, normalPorConta = {};
+    estado.contas.forEach(function (c, idx) {
+      ofertaPorConta[c.key] = ofertaSorted.slice(idx * slots, idx * slots + slots);
+      totais[c.key] = ofertaPorConta[c.key].reduce(function (s, i) { return s + i.selecionado.total; }, 0);
+      normalPorConta[c.key] = [];
+    });
+    var overflow = ofertaSorted.slice(slots * estado.contas.length);
+    a.normalItens.concat(overflow).forEach(function (i) {
+      var ck = escolherConta(i, totais);
+      normalPorConta[ck].push(i); totais[ck] += i.selecionado.total;
+    });
+
+    var ordem = ['dani', 'erico'].filter(function (k) { return estado.contas.some(function (c) { return c.key === k; }); });
+    if (ordem.length < estado.contas.length) ordem = estado.contas.map(function (c) { return c.key; });
+
+    var html = '<div class="duplo">' + ordem.map(function (ck) {
+      var conta = estado.contas.find(function (c) { return c.key === ck; });
+      var ofertas = ofertaPorConta[ck], outros = normalPorConta[ck];
+      var cartUrl = montarCartUrl(ofertas.concat(outros));
+      return '<div class="cartao pad">' +
+        '<div class="cabecalho-conta"><h2 style="margin:0">Carrinho ' + escaparHtml(conta.label) + '</h2><span class="total">' + formatMoney(round(totais[ck])) + '</span></div>' +
+        (cartUrl ? '<a class="botao primario" style="margin:8px 0" href="' + cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
+        ' <button class="botao mini" data-registrar="' + ck + '">Registrar compra</button>' +
+        '<p class="sub-titulo">Minhas Ofertas</p>' +
+        (ofertas.length ? ofertas.map(linhaCompraHtml).join('') : '<p class="vazio">Nenhuma.</p>') +
+        '<p class="sub-titulo">Outros itens</p>' +
+        (outros.length ? outros.map(linhaCompraHtml).join('') : '<p class="vazio">Nenhum.</p>') +
+        '</div>';
+    }).join('') + '</div>';
+
+    document.getElementById('carrinhos').innerHTML = html;
+    estado.comprarPorConta = { oferta: ofertaPorConta, normal: normalPorConta };
+    document.querySelectorAll('#carrinhos [data-abrir]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var i = estado.resultado.itens.find(function (x) { return x.key === el.dataset.abrir; });
+        if (i && i.selecionado) abrirNoZonaSul(i.selecionado.link, i.nome);
+      });
+    });
+    document.querySelectorAll('#carrinhos [data-registrar]').forEach(function (b) {
+      b.addEventListener('click', function () { registrarCompra(b.dataset.registrar); });
+    });
+  }
+
+  function linhaCompraHtml(i) {
+    var s = i.selecionado;
+    return '<div class="linha-item" data-abrir="' + i.key + '">' + miniaturaHtml(s.imagem, true) +
+      '<div class="info-item"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
+      '<p class="preco">' + i.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div></div>';
+  }
+
+  function registrarCompra(contaKey) {
+    var oferta = (estado.comprarPorConta.oferta[contaKey] || []);
+    var normal = (estado.comprarPorConta.normal[contaKey] || []);
+    var lista = oferta.concat(normal);
+    if (!lista.length) { alert('Nenhum item nesta conta.'); return; }
+    var itens = lista.map(function (i) {
+      return { key: i.key, nome: i.selecionado.nome, sku: i.selecionado.sku, precoPago: i.selecionado.preco, quantidade: i.quantidade };
+    });
+    if (!confirm('Registrar ' + itens.length + ' item(ns) desta conta como comprados, com o preço da última cotação?')) return;
+    google.script.run.withSuccessHandler(function () {
+      alert('Compra registrada. Os preços de referência foram atualizados.');
+      carregar();
+    }).withFailureHandler(function (erro) {
+      alert(erro.message || 'Não consegui registrar a compra.');
+    }).concluirCompra({ conta: contaKey, itens: itens });
   }
 
   function escolherConta(item, totais) {
     var seg = normalizarBusca(item.segmento || '');
-    if (seg.indexOf('pereci') !== -1) return contaKey('dani', totais);
-    if (seg.indexOf('limpeza') !== -1 || seg.indexOf('pesado') !== -1) return contaKey('erico', totais);
+    if (seg.indexOf('pereci') !== -1 && totais.hasOwnProperty('dani')) return 'dani';
+    if ((seg.indexOf('limpeza') !== -1 || seg.indexOf('pesado') !== -1) && totais.hasOwnProperty('erico')) return 'erico';
     var chaves = Object.keys(totais);
     return chaves.reduce(function (m, k) { return totais[k] < totais[m] ? k : m; }, chaves[0]);
-  }
-  function contaKey(preferida, totais) {
-    return totais.hasOwnProperty(preferida) ? preferida : Object.keys(totais)[0];
   }
 
   function montarCartUrl(lista) {
@@ -424,153 +659,11 @@
     return estado.cartBase + '?' + p.join('&');
   }
 
-  function renderFase2() {
-    var a = agregar();
-    estado.agregado = a;
-    var html = '';
-
-    // (a) Resumo
-    html += '<h3>Resumo</h3>';
-    html += '<div class="metricas">' +
-      metricaHtml('Total cotado', formatMoney(a.totalCotado), a.comSel.length + ' itens') +
-      metricaHtml('Desconto Minhas Ofertas', '&minus;' + formatMoney(a.economiaOfertas), 'estimado', false) +
-      metricaHtml('Estimado final', formatMoney(a.estimadoFinal), 'após descontos', true) +
-      metricaHtml('Elegíveis a desconto', String(a.elegiveis.length), 'desc. atual < ' + estado.cortePercent + '%') +
-      '</div>';
-    if (a.comErro.length) {
-      html += '<div class="cartao pad"><p class="preco" style="font-size:13px;color:var(--muted)">Sem candidato disponível: ' +
-        a.comErro.map(function (e) { return escaparHtml(e.nome); }).join(', ') + '</p></div>';
-    }
-
-    // (b) Carrinhos
-    html += '<h3>Carrinhos por conta</h3>';
-    a.carrinhos.forEach(function (c) {
-      html += '<div class="cartao pad">' +
-        '<div class="cabecalho-conta"><h2 style="margin:0">Conta ' + escaparHtml(c.label) + '</h2><span class="total">' + formatMoney(c.subtotal) + '</span></div>' +
-        '<div style="margin-top:8px">' + c.itens.map(function (i) { return linhaCotacaoHtml(i, true); }).join('') + '</div>' +
-        (c.cartUrl ? '<a class="botao primario" style="margin-top:12px" href="' + c.cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
-        ' <button class="botao" data-registrar="' + c.key + '" style="margin-top:12px">Registrar compra desta conta</button>' +
-        '</div>';
-    });
-
-    // (d) Minhas Ofertas (slots)
-    html += '<h3>Minhas Ofertas &middot; ' + a.slotted.length + '/' + (estado.slotsPorConta * estado.contas.length) + ' slots</h3>';
-    a.contasOfertas.forEach(function (co) {
-      html += '<div class="cartao pad">' +
-        '<div class="cabecalho-conta"><h2 style="margin:0">' + escaparHtml(co.label) + ' &middot; ' + co.itens.length + '/' + estado.slotsPorConta + '</h2>' +
-        '<span class="badge oferta">economia ~' + formatMoney(co.economia) + '</span></div>' +
-        (co.itens.length ? '<div style="margin-top:8px">' + co.itens.map(function (i) { return linhaCotacaoHtml(i, false); }).join('') + '</div>'
-          : '<p class="vazio">Sem itens elegíveis nesta conta.</p>') +
-        '</div>';
-    });
-
-    // (c) Acima do preço histórico
-    html += '<h3>Top 10 acima do preço histórico</h3>';
-    if (!a.acima.length) {
-      html += '<div class="cartao pad"><p class="vazio">Nenhum item acima do preço de referência. Bom momento de compra.</p></div>';
-    } else {
-      html += '<div class="cartao">' + a.acima.map(function (x) {
-        return '<div class="linha-item" data-abrir="' + x.item.key + '">' +
-          miniaturaHtml(x.item.selecionado.imagem, true) +
-          '<div class="info-item"><p class="nome">' + escaparHtml(x.item.selecionado.nome) + '</p>' +
-          '<p class="preco">hoje ' + formatMoney(x.item.selecionado.preco) + ' &middot; ref ' + formatMoney(x.item.precoReferencia) + '</p></div>' +
-          '<span class="badge alta">+' + x.pct.toFixed(0) + '%</span></div>';
-      }).join('') + '</div>';
-    }
-
-    // (e) Insights de troca
-    html += '<h3>Insights de troca</h3>';
-    if (!a.insights.length) {
-      html += '<div class="cartao pad"><p class="vazio">Nenhuma troca vantajosa encontrada.</p></div>';
-    } else {
-      html += '<div class="cartao">' + a.insights.map(function (t) {
-        return '<div class="troca">' +
-          miniaturaHtml(t.sugerido.imagem, true) +
-          '<div class="corpo"><p class="de">' + escaparHtml(t.atual.nome) + ' &middot; ' + t.atual.precoUnitarioLabel + '</p>' +
-          '<p class="para">' + escaparHtml(t.sugerido.nome) + ' &middot; ' + t.sugerido.precoUnitarioLabel + '</p></div>' +
-          '<button class="botao" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
-      }).join('') + '</div>';
-    }
-
-    document.getElementById('resultado-checagem').innerHTML = html;
-    renderCarrinhosFase3(a);
-    ligarEventosFase2();
-  }
-
-  function linhaCotacaoHtml(item, mostrarBadge) {
-    var s = item.selecionado;
-    var badge = '';
-    if (mostrarBadge) {
-      badge = s.elegivelMinhasOfertas
-        ? '<span class="badge oferta">oferta</span>'
-        : '<span class="badge desc">' + s.descontoAtualPercent.toFixed(0) + '% no site</span>';
-    }
-    return '<div class="linha-item" data-abrir="' + item.key + '">' +
-      miniaturaHtml(s.imagem, true) +
-      '<div class="info-item"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
-      '<p class="preco">' + item.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div>' +
-      badge + '</div>';
-  }
-
-  function renderCarrinhosFase3(a) {
-    var html = a.carrinhos.map(function (c) {
-      return '<div class="cartao pad">' +
-        '<div class="cabecalho-conta"><h2 style="margin:0">Conta ' + escaparHtml(c.label) + '</h2><span class="total">' + formatMoney(c.subtotal) + '</span></div>' +
-        '<div style="margin-top:8px">' + c.itens.map(function (i) { return linhaCotacaoHtml(i, false); }).join('') + '</div>' +
-        (c.cartUrl ? '<a class="botao primario" style="margin-top:12px" href="' + c.cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
-        ' <button class="botao" data-registrar="' + c.key + '" style="margin-top:12px">Registrar compra desta conta</button>' +
-        '</div>';
-    }).join('');
-    document.getElementById('carrinhos').innerHTML = html;
-  }
-
-  function ligarEventosFase2() {
-    document.querySelectorAll('#resultado-checagem [data-abrir], #carrinhos [data-abrir]').forEach(function (linha) {
-      linha.addEventListener('click', function () {
-        var i = estado.resultado.itens.find(function (x) { return x.key === linha.dataset.abrir; });
-        if (i && i.selecionado) abrirNoZonaSul(i.selecionado.link, i.nome);
-      });
-    });
-    document.querySelectorAll('[data-trocar]').forEach(function (b) {
-      b.addEventListener('click', function (e) { e.stopPropagation(); trocarProduto(b.dataset.trocar, b.dataset.sku); });
-    });
-    document.querySelectorAll('[data-registrar]').forEach(function (b) {
-      b.addEventListener('click', function (e) { e.stopPropagation(); registrarCompra(b.dataset.registrar); });
-    });
-  }
-
-  function trocarProduto(key, sku) {
-    var item = estado.resultado.itens.find(function (i) { return i.key === key; });
-    if (!item) return;
-    var idx = (item.alternativas || []).findIndex(function (a) { return a.sku === sku; });
-    if (idx < 0) return;
-    var novo = item.alternativas[idx];
-    item.alternativas[idx] = item.selecionado;
-    item.selecionado = novo;
-    renderFase2();
-  }
-
-  function registrarCompra(contaKey) {
-    var carrinho = estado.agregado.carrinhos.find(function (c) { return c.key === contaKey; });
-    if (!carrinho || !carrinho.itens.length) { alert('Nenhum item nesta conta.'); return; }
-    var itens = carrinho.itens.map(function (i) {
-      return { key: i.key, nome: i.selecionado.nome, sku: i.selecionado.sku, precoPago: i.selecionado.preco, quantidade: i.quantidade };
-    });
-    if (!confirm('Registrar ' + itens.length + ' item(ns) da conta ' + carrinho.label + ' como comprados, com o preço da última cotação?')) return;
-    google.script.run.withSuccessHandler(function () {
-      alert('Compra registrada. Os preços de referência foram atualizados.');
-      carregar();
-    }).withFailureHandler(function (erro) {
-      alert(erro.message || 'Não consegui registrar a compra.');
-    }).concluirCompra({ conta: contaKey, itens: itens });
-  }
-
   // ---------- helpers ----------
 
   function metricaHtml(rotulo, valor, sub, destaque) {
-    return '<div class="metrica' + (destaque ? ' destaque' : '') + '">' +
-      '<p class="rotulo">' + rotulo + '</p><p class="valor">' + valor + '</p>' +
-      (sub ? '<p class="sub">' + sub + '</p>' : '') + '</div>';
+    return '<div class="metrica' + (destaque ? ' destaque' : '') + '"><p class="rotulo">' + rotulo + '</p>' +
+      '<p class="valor">' + valor + '</p>' + (sub ? '<p class="sub">' + sub + '</p>' : '') + '</div>';
   }
   function formatMoney(v) { return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
   function round(v) { return Math.round(Number(v) * 100) / 100; }
