@@ -66,9 +66,10 @@ o mesmo padrão usado no Controle de Despachante.
 2. ~~Confirmar acesso "Qualquer pessoa" no deploy~~ — feito.
 3. ~~Ativar GitHub Pages~~ — feito, no ar em https://erfrizzera.github.io/autocompras/.
 4. ~~Rodar `importarBaseHistorica`~~ — feito, os 61 itens estão na aba `Itens`.
-5. **Pendente**: rodar `preencherImagens` uma vez pelo editor, pra buscar foto/link/sku
-   dos 61 itens (a base antiga não trazia isso). Demora ~1-2min (61 consultas ao
-   catálogo do Zona Sul).
+   (Se quiser incluir o vinho Malbec adicionado à base, rode de novo — é idempotente.)
+5. ~~Rodar `preencherImagens`~~ — agora tem o botão **"Buscar fotos"** na própria tela
+   (fase 1). O web app roda com os escopos autorizados, então dá pra rodar direto da
+   UI — não precisa mais do editor. Grava as fotos no Sheets (permanente).
 
 ## Bugs encontrados e corrigidos (2026-07-03)
 
