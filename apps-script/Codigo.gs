@@ -489,6 +489,7 @@ function serializarCandidato_(candidato, ranking, quantidade, precoReferencia) {
   const economiaPotencial = elegivelMinhasOfertas
     ? arredondar_(candidato.preco * quantidade * (gapDescontoPercent / 100))
     : 0;
+  const precoUnit = arredondar_(candidato.preco / (candidato.metrica.valor || 1));
 
   return {
     nome: candidato.nome,
@@ -503,10 +504,11 @@ function serializarCandidato_(candidato, ranking, quantidade, precoReferencia) {
     descontoAtualPercent,
     elegivelMinhasOfertas,
     economiaPotencial,
+    gapMinhasOfertasPercent: elegivelMinhasOfertas ? arredondar_(gapDescontoPercent) : 0,
     metricaLabel: candidato.metrica.rotulo,
     metricaTipo: candidato.metrica.tipo,
-    precoUnitario: arredondar_(candidato.preco / (candidato.metrica.valor || 1)),
-    precoUnitarioLabel: 'R$ ' + candidato.preco.toFixed(2).replace('.', ',') + ' ' + candidato.metrica.compareLabel,
+    precoUnitario: precoUnit,
+    precoUnitarioLabel: 'R$ ' + precoUnit.toFixed(2).replace('.', ',') + ' ' + candidato.metrica.compareLabel,
     compareLabel: candidato.metrica.compareLabel,
     link: candidato.link,
     imagem: candidato.imagem,

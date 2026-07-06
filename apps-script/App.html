@@ -462,9 +462,9 @@
       html += '<div class="cartao">' + a.insights.map(function (t) {
         return '<div class="troca">' + miniaturaHtml(t.sugerido.imagem, true) +
           '<div class="corpo">' +
-          '<p class="de" data-link-atual="' + t.key + '">' + escaparHtml(t.atual.nome) + ' &middot; ' + t.atual.precoUnitarioLabel + '</p>' +
-          '<p class="para" data-link-sug="' + t.key + '">' + escaparHtml(t.sugerido.nome) + ' &middot; ' + t.sugerido.precoUnitarioLabel + '</p>' +
-          '</div><span class="badge baixa" style="margin-right:6px">&minus;' + t.economiaPct.toFixed(0) + '%</span>' +
+          '<p class="de" data-link-atual="' + t.key + '">' + labelTroca(t.atual) + '</p>' +
+          '<p class="para" data-link-sug="' + t.key + '">' + labelTroca(t.sugerido) + '</p>' +
+          '</div><span class="badge baixa" style="margin-right:6px">&minus;' + t.economiaPct.toFixed(0) + '% /' + unidadeCurta(t.atual.compareLabel) + '</span>' +
           '<button class="botao mini" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
       }).join('') + '</div>';
     }
@@ -477,8 +477,8 @@
 
     // CARRINHOS
     html += '<h3>Carrinhos</h3><div class="duplo">' +
-      colunaCarrinhoHtml('Minhas Ofertas &middot; ' + a.ofertaItens.length + '/' + (estado.slotsPorConta * estado.contas.length), a.ofertaItens, 'Mover p/ normal') +
-      colunaCarrinhoHtml('Carrinho normal', a.normalItens, 'Mover p/ ofertas') +
+      colunaCarrinhoHtml('Minhas Ofertas &middot; ' + a.ofertaItens.length + '/' + (estado.slotsPorConta * estado.contas.length), a.ofertaItens, 'Mover p/ normal', true) +
+      colunaCarrinhoHtml('Carrinho normal', a.normalItens, 'Mover p/ ofertas', false) +
       '</div>';
 
     document.getElementById('resultado-checagem').innerHTML = html;
@@ -497,24 +497,50 @@
     return '<div class="cartao"><h2>' + titulo + '</h2>' + corpo + '</div>';
   }
 
+  function labelTroca(c) {
+    return escaparHtml(c.nome) + ' &middot; ' + formatMoney(c.preco) + ' &middot; ' + c.precoUnitarioLabel;
+  }
+  function unidadeCurta(compareLabel) {
+    return String(compareLabel || '').replace('por ', '').replace('litro', 'L');
+  }
+
+  // Preço do item no carrinho normal: preço atual e, se em promoção, tabela riscada + % + promo.
   function precoLinhaHtml(i) {
     var s = i.selecionado;
     var promo = s.precoLista > s.preco + 0.001;
     var atual = promo
-      ? '<span class="promo-antigo">' + formatMoney(s.precoLista) + '</span> <span class="badge baixa" style="padding:1px 6px">&minus;' + s.descontoAtualPercent.toFixed(0) + '%</span> ' + formatMoney(s.preco)
+      ? '<span class="promo-antigo">' + formatMoney(s.precoLista) + '</span> <span class="badge alta" style="padding:1px 6px">&minus;' + s.descontoAtualPercent.toFixed(0) + '%</span> ' + formatMoney(s.preco)
       : formatMoney(s.preco);
     var ref = i.precoReferencia != null ? ' &middot; última ' + formatMoney(i.precoReferencia) : '';
     return i.quantidade + '× ' + atual + ref;
   }
 
-  function colunaCarrinhoHtml(titulo, lista, moverLabel) {
-    var total = round(lista.reduce(function (s, i) { return s + i.selecionado.total; }, 0));
+  // Preço do item em Minhas Ofertas: preço atual riscado + % de desconto de Minhas Ofertas + preço estimado.
+  function precoMOHtml(i) {
+    var s = i.selecionado;
+    if (s.elegivelMinhasOfertas && s.gapMinhasOfertasPercent > 0) {
+      var precoMO = s.preco * (1 - s.gapMinhasOfertasPercent / 100);
+      return i.quantidade + '× <span class="promo-antigo">' + formatMoney(s.preco) + '</span> ' +
+        '<span class="badge oferta" style="padding:1px 6px">&minus;' + s.gapMinhasOfertasPercent.toFixed(0) + '% oferta</span> ' + formatMoney(precoMO);
+    }
+    return precoLinhaHtml(i);
+  }
+
+  function totalItemMO(i) {
+    var s = i.selecionado;
+    return (s.elegivelMinhasOfertas && s.gapMinhasOfertasPercent > 0)
+      ? s.preco * i.quantidade * (1 - s.gapMinhasOfertasPercent / 100)
+      : s.total;
+  }
+
+  function colunaCarrinhoHtml(titulo, lista, moverLabel, modoMO) {
+    var total = round(lista.reduce(function (s, i) { return s + (modoMO ? totalItemMO(i) : i.selecionado.total); }, 0));
     var corpo = lista.length
       ? lista.map(function (i) {
           var s = i.selecionado;
           return '<div class="linha-item">' + miniaturaHtml(s.imagem, true) +
             '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
-            '<p class="preco">' + precoLinhaHtml(i) + '</p></div>' +
+            '<p class="preco">' + (modoMO ? precoMOHtml(i) : precoLinhaHtml(i)) + '</p></div>' +
             '<button class="botao mini" data-mover="' + i.key + '">' + moverLabel + '</button></div>';
         }).join('')
       : '<p class="vazio">Vazio.</p>';
