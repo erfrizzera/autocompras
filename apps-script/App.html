@@ -82,7 +82,7 @@
   .metrica .valor { font-size: 22px; font-weight: 700; color: var(--green-strong); }
   .metrica .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .metrica.destaque { background: var(--green-bg); border-color: transparent; }
-  .duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  .duplo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: start; }
   .vazio { color: var(--muted); font-size: 13px; padding: 0.75rem 0; }
   .carregando { color: var(--muted); font-size: 13px; padding: 1rem 0; }
   .barra-fixa {
@@ -266,7 +266,10 @@
   }
 
   function linhaItemHtml(item) {
-    var precoTexto = item.precoReferencia != null ? formatMoney(item.precoReferencia) : 'sem preço de referência';
+    var dataBR = formatarDataBR(item.dataUltimaCompra);
+    var precoTexto = item.precoReferencia != null
+      ? formatMoney(item.precoReferencia) + (dataBR ? ' <span style="color:var(--muted)">&middot; ref ' + dataBR + '</span>' : '')
+      : 'sem preço de referência';
     var retirado = item.status === 'retirado';
     var qty = retirado ? 0 : (item.quantidadeAtual || 0);
     var controle = retirado
@@ -276,7 +279,7 @@
         '<span>' + qty + '</span>' +
         '<button data-acao="mais" data-key="' + item.key + '">+</button>' +
         '</div>' +
-        '<button class="botao-x" data-acao="retirar" data-key="' + item.key + '" title="Retirar da Lista Recorrente"><i class="ti ti-trash"></i></button>';
+        '<button class="botao mini" data-acao="retirar" data-key="' + item.key + '" style="border-color:var(--red); color:var(--red)" title="Retirar da Lista Recorrente">Retirar</button>';
 
     return '<div class="linha-item' + (qty > 0 ? ' selecionado' : '') + '" data-abrir="' + item.key + '">' +
       miniaturaHtml(item.imagem, false) +
@@ -474,8 +477,8 @@
 
     // CARRINHOS
     html += '<h3>Carrinhos</h3><div class="duplo">' +
-      colunaCarrinhoHtml('Minhas Ofertas &middot; ' + a.ofertaItens.length + '/' + (estado.slotsPorConta * estado.contas.length), a.ofertaItens, 'ti-arrow-right') +
-      colunaCarrinhoHtml('Carrinho normal', a.normalItens, 'ti-arrow-left') +
+      colunaCarrinhoHtml('Minhas Ofertas &middot; ' + a.ofertaItens.length + '/' + (estado.slotsPorConta * estado.contas.length), a.ofertaItens, 'Mover p/ normal') +
+      colunaCarrinhoHtml('Carrinho normal', a.normalItens, 'Mover p/ ofertas') +
       '</div>';
 
     document.getElementById('resultado-checagem').innerHTML = html;
@@ -504,7 +507,7 @@
     return i.quantidade + '× ' + atual + ref;
   }
 
-  function colunaCarrinhoHtml(titulo, lista, acaoIcone) {
+  function colunaCarrinhoHtml(titulo, lista, moverLabel) {
     var total = round(lista.reduce(function (s, i) { return s + i.selecionado.total; }, 0));
     var corpo = lista.length
       ? lista.map(function (i) {
@@ -512,7 +515,7 @@
           return '<div class="linha-item">' + miniaturaHtml(s.imagem, true) +
             '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
             '<p class="preco">' + precoLinhaHtml(i) + '</p></div>' +
-            '<button class="botao-x" data-mover="' + i.key + '" title="Mover para o outro carrinho"><i class="ti ' + acaoIcone + '"></i></button></div>';
+            '<button class="botao mini" data-mover="' + i.key + '">' + moverLabel + '</button></div>';
         }).join('')
       : '<p class="vazio">Vazio.</p>';
     return '<div class="cartao"><div class="cabecalho-conta"><h2 style="margin:0">' + titulo + '</h2><span class="total">' + formatMoney(total) + '</span></div>' + corpo + '</div>';
@@ -614,9 +617,9 @@
         '<div class="cabecalho-conta"><h2 style="margin:0">Carrinho ' + escaparHtml(conta.label) + '</h2><span class="total">' + formatMoney(round(res.totais[ck])) + '</span></div>' +
         (cartUrl ? '<a class="botao primario" style="margin:8px 0 4px" href="' + cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
         '<div class="subsecao"><p class="rot">Minhas Ofertas</p>' +
-        (g.ofertas.length ? g.ofertas.map(function (i) { return linhaCompraHtml(i, ck); }).join('') : '<p class="vazio">Nenhuma.</p>') + '</div>' +
+        (g.ofertas.length ? g.ofertas.map(function (i) { return linhaCompraHtml(i, ck, true); }).join('') : '<p class="vazio">Nenhuma.</p>') + '</div>' +
         '<div class="subsecao"><p class="rot">Outros itens</p>' +
-        (g.outros.length ? g.outros.map(function (i) { return linhaCompraHtml(i, ck); }).join('') : '<p class="vazio">Nenhum.</p>') + '</div>' +
+        (g.outros.length ? g.outros.map(function (i) { return linhaCompraHtml(i, ck, false); }).join('') : '<p class="vazio">Nenhum.</p>') + '</div>' +
         '</div>';
     }).join('') + '</div>';
 
@@ -630,20 +633,40 @@
     document.querySelectorAll('#carrinhos [data-mover-conta]').forEach(function (b) {
       b.addEventListener('click', function (e) { e.stopPropagation(); moverConta(b.dataset.moverConta, b.dataset.atual); });
     });
+    document.querySelectorAll('#carrinhos [data-mover-oferta]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); moverOfertaComprar(b.dataset.moverOferta); });
+    });
   }
 
-  function linhaCompraHtml(i, contaAtual) {
+  function outraContaLabel(contaAtual) {
+    var outra = estado.contas.find(function (c) { return c.key !== contaAtual; });
+    return outra ? outra.label : '';
+  }
+
+  function linhaCompraHtml(i, contaAtual, ehOferta) {
     var s = i.selecionado;
     return '<div class="linha-item">' + miniaturaHtml(s.imagem, true) +
       '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
       '<p class="preco">' + i.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div>' +
-      '<button class="botao-x" data-mover-conta="' + i.key + '" data-atual="' + contaAtual + '" title="Mover para o outro carrinho"><i class="ti ti-transfer"></i></button></div>';
+      '<div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0">' +
+      '<button class="botao mini" data-mover-conta="' + i.key + '" data-atual="' + contaAtual + '">&rarr; ' + escaparHtml(outraContaLabel(contaAtual)) + '</button>' +
+      '<button class="botao mini" data-mover-oferta="' + i.key + '">' + (ehOferta ? '&rarr; Outros' : '&rarr; Ofertas') + '</button>' +
+      '</div></div>';
   }
 
   function moverConta(key, atual) {
     var outras = estado.contas.map(function (c) { return c.key; }).filter(function (k) { return k !== atual; });
     if (!outras.length) return;
     estado.overridesConta[key] = outras[0];
+    renderComprar();
+  }
+
+  function moverOfertaComprar(key) {
+    var item = estado.resultado.itens.find(function (i) { return i.key === key; });
+    if (!item) return;
+    var atual = estado.agregado.isOferta(item);
+    estado.overridesOferta[key] = atual ? 'normal' : 'oferta';
+    estado.agregado = agregar();
     renderComprar();
   }
 
@@ -708,6 +731,11 @@
       '<p class="valor">' + valor + '</p>' + (sub ? '<p class="sub">' + sub + '</p>' : '') + '</div>';
   }
   function formatMoney(v) { return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+  function formatarDataBR(s) {
+    if (!s) return '';
+    var m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? m[3] + '/' + m[2] + '/' + m[1] : String(s);
+  }
   function round(v) { return Math.round(Number(v) * 100) / 100; }
   function escaparHtml(t) { var d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
   function normalizarBusca(t) {
