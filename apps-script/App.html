@@ -68,7 +68,7 @@
   button.primario:hover { background: var(--green-strong); }
   button.mini { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 8px; }
   a.botao { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0.75rem; }
   .toolbar input { flex: 1; min-width: 160px; }
   .badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
   .badge.oferta { background: var(--green-bg); color: var(--green); }
@@ -83,7 +83,7 @@
   .metrica .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .metrica.destaque { background: var(--green-bg); border-color: transparent; }
   .duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
-  .vazio { color: var(--muted); font-size: 13px; padding: 1rem 0; }
+  .vazio { color: var(--muted); font-size: 13px; padding: 0.75rem 0; }
   .carregando { color: var(--muted); font-size: 13px; padding: 1rem 0; }
   .barra-fixa {
     position: fixed; left: 0; right: 0; bottom: 0; max-width: 1080px; margin: 0 auto;
@@ -98,10 +98,12 @@
   .troca .para { color: var(--green); font-weight: 600; cursor: pointer; }
   .cabecalho-conta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
   .cabecalho-conta .total { font-size: 16px; font-weight: 700; color: var(--green-strong); }
-  .log-linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .log-linha:last-child { border-bottom: none; }
-  .log-linha .quando { color: var(--muted); }
-  .sub-titulo { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin: 10px 0 4px; }
+  .subsecao { background: var(--surface-2); border-radius: 10px; padding: 6px 12px; margin: 10px 0; }
+  .subsecao .rot { font-size: 11px; font-weight: 700; color: var(--green-strong); text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 0; }
+  .grupo-cab { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .chevron { transition: transform 0.15s; }
+  .chevron.aberto { transform: rotate(180deg); }
+  .promo-antigo { color: var(--muted); text-decoration: line-through; }
 </style>
 </head>
 <body>
@@ -117,20 +119,17 @@
   </div>
 
   <section class="secao visivel" id="secao-lista">
-    <div class="cartao pad">
-      <h2>Adicionar produto por link do Zona Sul</h2>
-      <div class="toolbar" style="margin:0">
-        <input type="text" id="campo-link" placeholder="Cole o link do produto">
-        <button class="botao primario" id="botao-adicionar">Adicionar</button>
-      </div>
+    <button class="botao primario" id="botao-ultimo" style="width:100%; justify-content:center; display:none; margin-bottom:0.75rem;">
+      <i class="ti ti-shopping-cart"></i> Último carrinho &middot; <span id="ultimo-quando"></span>
+    </button>
+
+    <div class="toolbar">
+      <input type="text" id="campo-link" placeholder="Para adicionar um item à Lista Recorrente, cole o link do produto">
+      <button class="botao" id="botao-adicionar">Adicionar</button>
     </div>
-
-    <div id="log-carrinho"></div>
-
     <div class="toolbar">
       <input type="text" id="campo-busca" placeholder="Buscar item">
       <button class="botao" id="botao-atualizar">Atualizar lista</button>
-      <button class="botao primario" id="botao-gravar-lista">Gravar lista</button>
     </div>
 
     <div id="lista-itens"><p class="carregando">Carregando lista...</p></div>
@@ -139,12 +138,15 @@
   <section class="secao" id="secao-checagem">
     <div class="toolbar">
       <button class="botao primario" id="botao-checar">Checar preços</button>
-      <button class="botao" id="botao-gravar-carrinho">Gravar carrinho</button>
     </div>
     <div id="resultado-checagem"></div>
   </section>
 
   <section class="secao" id="secao-comprar">
+    <div class="toolbar" id="comprar-toolbar" style="display:none">
+      <button class="botao primario" id="botao-gravar-carrinho">Gravar carrinho</button>
+      <button class="botao" id="botao-atualizar-base">Atualizar base de preços</button>
+    </div>
     <div id="carrinhos"><p class="vazio">Faça a checagem de preço primeiro.</p></div>
   </section>
 </div>
@@ -163,7 +165,8 @@
   var estado = {
     itens: [], contas: [], slotsPorConta: 10, cortePercent: 15,
     cartBase: '', accountUrl: '#', filtro: '', resultado: null,
-    logCarrinho: [], overridesOferta: {}
+    ultimoCarrinhoData: '', overridesOferta: {}, overridesConta: {},
+    retiradosAberto: false, agregado: null
   };
 
   document.querySelectorAll('.aba').forEach(function (aba) {
@@ -180,11 +183,12 @@
       b.disabled = false; b.textContent = 'Atualizar lista'; alert('Não consegui atualizar agora.');
     }).preencherImagens();
   });
-  document.getElementById('botao-gravar-lista').addEventListener('click', gravarLista);
-  document.getElementById('botao-gravar-carrinho').addEventListener('click', gravarCarrinho);
+  document.getElementById('botao-ultimo').addEventListener('click', abrirUltimoCarrinho);
   document.getElementById('botao-ir-checagem').addEventListener('click', function () {
     mudarFase('checagem'); document.getElementById('botao-checar').click();
   });
+  document.getElementById('botao-gravar-carrinho').addEventListener('click', gravarUltimoCarrinho);
+  document.getElementById('botao-atualizar-base').addEventListener('click', atualizarBase);
 
   function mudarFase(fase) {
     document.querySelectorAll('.aba').forEach(function (a) { a.classList.toggle('ativa', a.dataset.fase === fase); });
@@ -199,8 +203,8 @@
       estado.itens = r.itens; estado.contas = r.contas;
       estado.slotsPorConta = r.slotsPorConta; estado.cortePercent = r.cortePercent;
       estado.cartBase = r.cartBase; estado.accountUrl = r.accountUrl;
-      estado.logCarrinho = r.logCarrinho || [];
-      renderizarLista(); renderLog();
+      estado.ultimoCarrinhoData = r.ultimoCarrinhoData || '';
+      renderizarLista(); renderUltimoBotao();
     }).withFailureHandler(function () {
       document.getElementById('lista-itens').innerHTML = '<p class="vazio">Não consegui carregar a lista agora.</p>';
     }).obterEstadoInicial();
@@ -208,14 +212,28 @@
 
   // ---------- Fase 1: lista ----------
 
-  function renderLog() {
-    var el = document.getElementById('log-carrinho');
-    if (!estado.logCarrinho.length) { el.innerHTML = ''; return; }
-    el.innerHTML = '<h3>Carrinhos gravados</h3><div class="cartao pad">' +
-      estado.logCarrinho.map(function (l) {
-        return '<div class="log-linha"><span class="quando">' + escaparHtml(l.data) + ' &middot; ' + escaparHtml(l.origem) + '</span>' +
-          '<span>' + l.qtdItens + ' itens &middot; ' + (l.total != null ? formatMoney(l.total) : '—') + '</span></div>';
-      }).join('') + '</div>';
+  function renderUltimoBotao() {
+    var b = document.getElementById('botao-ultimo');
+    if (estado.ultimoCarrinhoData) {
+      document.getElementById('ultimo-quando').textContent = estado.ultimoCarrinhoData;
+      b.style.display = 'inline-flex';
+    } else { b.style.display = 'none'; }
+  }
+
+  function abrirUltimoCarrinho() {
+    var b = document.getElementById('botao-ultimo');
+    b.disabled = true;
+    google.script.run.withSuccessHandler(function (uc) {
+      b.disabled = false;
+      if (!uc || !uc.itens.length) { alert('Nenhum último carrinho gravado.'); return; }
+      estado.resultado = { itens: uc.itens };
+      estado.overridesOferta = uc.overridesOferta || {};
+      estado.overridesConta = uc.overridesConta || {};
+      estado.agregado = agregar();
+      mudarFase('comprar');
+    }).withFailureHandler(function () {
+      b.disabled = false; alert('Não consegui abrir o último carrinho.');
+    }).obterUltimoCarrinho();
   }
 
   function renderizarLista() {
@@ -236,7 +254,11 @@
       html += '<h3>Lista Recorrente</h3><div class="cartao">' + ativos.map(linhaItemHtml).join('') + '</div>';
     }
     if (retirados.length && !filtro) {
-      html += '<h3>Itens retirados</h3><div class="cartao">' + retirados.map(linhaItemHtml).join('') + '</div>';
+      html += '<div class="grupo-cab" id="cab-retirados"><h3 style="margin:1.5rem 0 0.5rem">Itens retirados (' + retirados.length + ')</h3>' +
+        '<i class="ti ti-chevron-down chevron' + (estado.retiradosAberto ? ' aberto' : '') + '"></i></div>';
+      if (estado.retiradosAberto) {
+        html += '<div class="cartao">' + retirados.map(linhaItemHtml).join('') + '</div>';
+      }
     }
     container.innerHTML = html;
     ligarEventosLista();
@@ -248,20 +270,18 @@
     var retirado = item.status === 'retirado';
     var qty = retirado ? 0 : (item.quantidadeAtual || 0);
     var controle = retirado
-      ? '<span class="badge warn">Retirado</span>'
+      ? '<button class="botao mini primario" data-acao="reativar" data-key="' + item.key + '">Recolocar</button>'
       : '<div class="stepper">' +
         '<button data-acao="menos" data-key="' + item.key + '">&minus;</button>' +
         '<span>' + qty + '</span>' +
         '<button data-acao="mais" data-key="' + item.key + '">+</button>' +
-        '</div>';
-    var botao = retirado
-      ? '<button class="botao-x" data-acao="reativar" data-key="' + item.key + '" title="Voltar para a lista"><i class="ti ti-arrow-back-up"></i></button>'
-      : '<button class="botao-x" data-acao="retirar" data-key="' + item.key + '" title="Retirar da lista recorrente"><i class="ti ti-trash"></i></button>';
+        '</div>' +
+        '<button class="botao-x" data-acao="retirar" data-key="' + item.key + '" title="Retirar da Lista Recorrente"><i class="ti ti-trash"></i></button>';
 
     return '<div class="linha-item' + (qty > 0 ? ' selecionado' : '') + '" data-abrir="' + item.key + '">' +
       miniaturaHtml(item.imagem, false) +
       '<div class="info-item"><p class="nome">' + escaparHtml(item.nome) + '</p><p class="preco">' + precoTexto + '</p></div>' +
-      controle + botao + '</div>';
+      controle + '</div>';
   }
 
   function miniaturaHtml(url, pequena) {
@@ -271,6 +291,8 @@
   }
 
   function ligarEventosLista() {
+    var cab = document.getElementById('cab-retirados');
+    if (cab) cab.addEventListener('click', function () { estado.retiradosAberto = !estado.retiradosAberto; renderizarLista(); });
     document.querySelectorAll('#lista-itens [data-abrir]').forEach(function (linha) {
       linha.addEventListener('click', function () {
         var item = estado.itens.find(function (i) { return i.key === linha.dataset.abrir; });
@@ -286,7 +308,7 @@
     document.querySelectorAll('#lista-itens [data-acao="retirar"]').forEach(function (b) {
       b.addEventListener('click', function (e) {
         e.stopPropagation();
-        if (!confirm('Retirar este item da lista recorrente?')) return;
+        if (!confirm('Retirar este item da Lista Recorrente?')) return;
         google.script.run.withSuccessHandler(carregar).retirarItem(b.dataset.key);
       });
     });
@@ -313,7 +335,7 @@
   function atualizarBarraFixa() {
     var barra = document.getElementById('barra-fixa');
     var faseAtual = document.querySelector('.aba.ativa').dataset.fase;
-    var n = estado.itens.filter(function (i) { return i.status !== 'retirado' && (i.quantidadeAtual || 0) > 0; }).length;
+    var n = selecionadosLista().length;
     if (faseAtual !== 'lista' || !n) { barra.style.display = 'none'; return; }
     barra.style.display = 'flex';
     document.getElementById('barra-fixa-texto').textContent = n + (n > 1 ? ' itens selecionados' : ' item selecionado');
@@ -336,21 +358,6 @@
     return estado.itens.filter(function (i) { return i.status !== 'retirado' && (i.quantidadeAtual || 0) > 0; });
   }
 
-  function gravarLista() {
-    var sel = selecionadosLista();
-    if (!sel.length) { alert('Marque a quantidade de pelo menos um item.'); return; }
-    var total = round(sel.reduce(function (s, i) { return s + (i.precoReferencia || 0) * i.quantidadeAtual; }, 0));
-    var resumo = sel.slice(0, 6).map(function (i) { return i.quantidadeAtual + '× ' + i.nome; }).join(', ');
-    var b = document.getElementById('botao-gravar-lista');
-    b.disabled = true; b.textContent = 'Gravando...';
-    google.script.run.withSuccessHandler(function (r) {
-      b.disabled = false; b.textContent = 'Gravar lista';
-      estado.logCarrinho = r.logCarrinho || []; renderLog();
-    }).withFailureHandler(function () {
-      b.disabled = false; b.textContent = 'Gravar lista'; alert('Não consegui gravar agora.');
-    }).gravarLogCarrinho({ origem: 'Lista', qtdItens: sel.length, total: total, resumo: resumo });
-  }
-
   // ---------- Fase 2: checagem ----------
 
   document.getElementById('botao-checar').addEventListener('click', function () {
@@ -365,7 +372,7 @@
     document.getElementById('resultado-checagem').innerHTML = '<p class="carregando">Consultando o Zona Sul, aguarde...</p>';
     google.script.run.withSuccessHandler(function (r) {
       botao.disabled = false; botao.textContent = 'Recarregar preços';
-      estado.resultado = r; estado.overridesOferta = {};
+      estado.resultado = r; estado.overridesOferta = {}; estado.overridesConta = {};
       renderFase2();
     }).withFailureHandler(function (erro) {
       botao.disabled = false; botao.textContent = 'Checar preços';
@@ -404,14 +411,20 @@
       .map(function (i) { return { item: i, pct: (i.precoReferencia - i.selecionado.preco) / i.precoReferencia * 100 }; })
       .sort(function (a, b) { return b.pct - a.pct; }).slice(0, 10);
 
+    // Insights de troca: só alternativas MAIS BARATAS por unidade, do mesmo tipo de embalagem.
     var insights = [];
     comSel.forEach(function (i) {
       var atual = i.selecionado, melhor = null;
       (i.alternativas || []).forEach(function (alt) {
+        if (alt.metricaTipo !== atual.metricaTipo) return;
         if (alt.precoUnitario < atual.precoUnitario * 0.97 && (!melhor || alt.precoUnitario < melhor.precoUnitario)) melhor = alt;
       });
-      if (melhor) insights.push({ key: i.key, atual: atual, sugerido: melhor });
+      if (melhor) {
+        var economiaPct = (atual.precoUnitario - melhor.precoUnitario) / atual.precoUnitario * 100;
+        insights.push({ key: i.key, atual: atual, sugerido: melhor, economiaPct: economiaPct });
+      }
     });
+    insights.sort(function (a, b) { return b.economiaPct - a.economiaPct; });
 
     return {
       comSel: comSel, comErro: comErro, totalCotado: totalCotado, elegiveis: elegiveis,
@@ -424,7 +437,6 @@
   function renderFase2() {
     var a = agregar();
     estado.agregado = a;
-    var slotTotal = estado.slotsPorConta * estado.contas.length;
     var html = '';
 
     // RESUMO
@@ -435,21 +447,22 @@
       metricaHtml('Elegíveis a desconto', String(a.elegiveis.length), 'desc. atual < ' + estado.cortePercent + '%') +
       '</div>';
     if (a.comErro.length) {
-      html += '<div class="cartao pad"><p class="preco" style="font-size:13px;color:var(--muted)">Sem produto disponível no Zona Sul agora: ' +
+      html += '<div class="cartao pad"><p style="font-size:13px;color:var(--muted)">Sem produto disponível no Zona Sul agora: ' +
         a.comErro.map(function (e) { return escaparHtml(e.nome); }).join(', ') + '</p></div>';
     }
 
     // INSIGHTS DE TROCA
     html += '<h3>Insights de troca</h3>';
     if (!a.insights.length) {
-      html += '<div class="cartao pad"><p class="vazio">Nenhuma troca vantajosa encontrada.</p></div>';
+      html += '<div class="cartao pad"><p class="vazio">Nenhuma alternativa mais barata por unidade encontrada.</p></div>';
     } else {
       html += '<div class="cartao">' + a.insights.map(function (t) {
         return '<div class="troca">' + miniaturaHtml(t.sugerido.imagem, true) +
           '<div class="corpo">' +
           '<p class="de" data-link-atual="' + t.key + '">' + escaparHtml(t.atual.nome) + ' &middot; ' + t.atual.precoUnitarioLabel + '</p>' +
           '<p class="para" data-link-sug="' + t.key + '">' + escaparHtml(t.sugerido.nome) + ' &middot; ' + t.sugerido.precoUnitarioLabel + '</p>' +
-          '</div><button class="botao mini" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
+          '</div><span class="badge baixa" style="margin-right:6px">&minus;' + t.economiaPct.toFixed(0) + '%</span>' +
+          '<button class="botao mini" data-trocar="' + t.key + '" data-sku="' + t.sugerido.sku + '">Trocar</button></div>';
       }).join('') + '</div>';
     }
 
@@ -459,13 +472,10 @@
       colunaTopHtml('Top 10 abaixo', a.abaixo, 'baixa', '&minus;') +
       '</div>';
 
-    // CARRINHOS: MINHAS OFERTAS x NORMAL
-    var excedido = a.ofertaItens.length > slotTotal;
-    html += '<h3>Carrinhos &middot; Minhas Ofertas ' + a.ofertaItens.length + '/' + slotTotal +
-      (excedido ? ' <span class="badge warn">acima de ' + slotTotal + '</span>' : '') + '</h3>';
-    html += '<div class="duplo">' +
-      colunaCarrinhoHtml('Minhas Ofertas', a.ofertaItens, 'normal') +
-      colunaCarrinhoHtml('Carrinho normal', a.normalItens, 'oferta') +
+    // CARRINHOS
+    html += '<h3>Carrinhos</h3><div class="duplo">' +
+      colunaCarrinhoHtml('Minhas Ofertas &middot; ' + a.ofertaItens.length + '/' + (estado.slotsPorConta * estado.contas.length), a.ofertaItens, 'ti-arrow-right') +
+      colunaCarrinhoHtml('Carrinho normal', a.normalItens, 'ti-arrow-left') +
       '</div>';
 
     document.getElementById('resultado-checagem').innerHTML = html;
@@ -484,16 +494,25 @@
     return '<div class="cartao"><h2>' + titulo + '</h2>' + corpo + '</div>';
   }
 
-  function colunaCarrinhoHtml(titulo, lista, destino) {
+  function precoLinhaHtml(i) {
+    var s = i.selecionado;
+    var promo = s.precoLista > s.preco + 0.001;
+    var atual = promo
+      ? '<span class="promo-antigo">' + formatMoney(s.precoLista) + '</span> <span class="badge baixa" style="padding:1px 6px">&minus;' + s.descontoAtualPercent.toFixed(0) + '%</span> ' + formatMoney(s.preco)
+      : formatMoney(s.preco);
+    var ref = i.precoReferencia != null ? ' &middot; última ' + formatMoney(i.precoReferencia) : '';
+    return i.quantidade + '× ' + atual + ref;
+  }
+
+  function colunaCarrinhoHtml(titulo, lista, acaoIcone) {
     var total = round(lista.reduce(function (s, i) { return s + i.selecionado.total; }, 0));
-    var acao = destino === 'oferta' ? 'ti-arrow-left' : 'ti-arrow-right';
     var corpo = lista.length
       ? lista.map(function (i) {
           var s = i.selecionado;
           return '<div class="linha-item">' + miniaturaHtml(s.imagem, true) +
             '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
-            '<p class="preco">' + i.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div>' +
-            '<button class="botao-x" data-mover="' + i.key + '" title="Mover para o outro carrinho"><i class="ti ' + acao + '"></i></button></div>';
+            '<p class="preco">' + precoLinhaHtml(i) + '</p></div>' +
+            '<button class="botao-x" data-mover="' + i.key + '" title="Mover para o outro carrinho"><i class="ti ' + acaoIcone + '"></i></button></div>';
         }).join('')
       : '<p class="vazio">Vazio.</p>';
     return '<div class="cartao"><div class="cabecalho-conta"><h2 style="margin:0">' + titulo + '</h2><span class="total">' + formatMoney(total) + '</span></div>' + corpo + '</div>';
@@ -514,7 +533,6 @@
     });
     document.querySelectorAll('[data-link-sug]').forEach(function (el) {
       el.addEventListener('click', function () {
-        var i = estado.resultado.itens.find(function (x) { return x.key === el.dataset.linkSug; });
         var t = estado.agregado.insights.find(function (x) { return x.key === el.dataset.linkSug; });
         if (t) abrirNoZonaSul(t.sugerido.link, t.sugerido.nome);
       });
@@ -546,42 +564,42 @@
     renderFase2();
   }
 
-  function gravarCarrinho() {
-    if (!estado.agregado) { alert('Faça a checagem de preço primeiro.'); return; }
-    var a = estado.agregado;
-    var resumo = a.ofertaItens.length + ' em Minhas Ofertas, ' + a.normalItens.length + ' no carrinho normal';
-    var b = document.getElementById('botao-gravar-carrinho');
-    b.disabled = true; b.textContent = 'Gravando...';
-    google.script.run.withSuccessHandler(function (r) {
-      b.disabled = false; b.textContent = 'Gravar carrinho';
-      estado.logCarrinho = r.logCarrinho || []; renderLog();
-      alert('Carrinho gravado no histórico.');
-    }).withFailureHandler(function () {
-      b.disabled = false; b.textContent = 'Gravar carrinho'; alert('Não consegui gravar agora.');
-    }).gravarLogCarrinho({ origem: 'Checagem', qtdItens: a.comSel.length, total: a.totalCotado, resumo: resumo });
-  }
-
   // ---------- Fase 3: comprar (Erico / Dani) ----------
 
+  function assignComprar() {
+    var a = estado.agregado;
+    var slots = estado.slotsPorConta;
+    var ofertaSorted = a.ofertaItens.slice().sort(function (x, y) { return y.selecionado.economiaPotencial - x.selecionado.economiaPotencial; });
+    var assign = {}, totais = {};
+    estado.contas.forEach(function (c) { totais[c.key] = 0; });
+    ofertaSorted.forEach(function (i, idx) {
+      var padrao = idx < slots ? estado.contas[0].key : (estado.contas[1] ? estado.contas[1].key : estado.contas[0].key);
+      var ck = estado.overridesConta[i.key] || padrao;
+      assign[i.key] = ck; totais[ck] += i.selecionado.total;
+    });
+    a.normalItens.forEach(function (i) {
+      var ck = estado.overridesConta[i.key] || escolherConta(i, totais);
+      assign[i.key] = ck; totais[ck] += i.selecionado.total;
+    });
+    return { assign: assign, totais: totais, ofertaKeys: keySet(a.ofertaItens) };
+  }
+
+  function keySet(lista) { var s = {}; lista.forEach(function (i) { s[i.key] = true; }); return s; }
+
   function renderComprar() {
+    document.getElementById('comprar-toolbar').style.display = estado.agregado ? 'flex' : 'none';
     if (!estado.agregado) {
       document.getElementById('carrinhos').innerHTML = '<p class="vazio">Faça a checagem de preço primeiro.</p>';
       return;
     }
     var a = estado.agregado;
-    var slots = estado.slotsPorConta;
-    var ofertaSorted = a.ofertaItens.slice().sort(function (x, y) { return y.selecionado.economiaPotencial - x.selecionado.economiaPotencial; });
-
-    var ofertaPorConta = {}, totais = {}, normalPorConta = {};
-    estado.contas.forEach(function (c, idx) {
-      ofertaPorConta[c.key] = ofertaSorted.slice(idx * slots, idx * slots + slots);
-      totais[c.key] = ofertaPorConta[c.key].reduce(function (s, i) { return s + i.selecionado.total; }, 0);
-      normalPorConta[c.key] = [];
-    });
-    var overflow = ofertaSorted.slice(slots * estado.contas.length);
-    a.normalItens.concat(overflow).forEach(function (i) {
-      var ck = escolherConta(i, totais);
-      normalPorConta[ck].push(i); totais[ck] += i.selecionado.total;
+    var res = assignComprar();
+    var porConta = {};
+    estado.contas.forEach(function (c) { porConta[c.key] = { ofertas: [], outros: [] }; });
+    a.comSel.forEach(function (i) {
+      var ck = res.assign[i.key];
+      if (!porConta[ck]) return;
+      if (res.ofertaKeys[i.key]) porConta[ck].ofertas.push(i); else porConta[ck].outros.push(i);
     });
 
     var ordem = ['dani', 'erico'].filter(function (k) { return estado.contas.some(function (c) { return c.key === k; }); });
@@ -589,54 +607,78 @@
 
     var html = '<div class="duplo">' + ordem.map(function (ck) {
       var conta = estado.contas.find(function (c) { return c.key === ck; });
-      var ofertas = ofertaPorConta[ck], outros = normalPorConta[ck];
-      var cartUrl = montarCartUrl(ofertas.concat(outros));
+      var g = porConta[ck];
+      var lista = g.ofertas.concat(g.outros);
+      var cartUrl = montarCartUrl(lista);
       return '<div class="cartao pad">' +
-        '<div class="cabecalho-conta"><h2 style="margin:0">Carrinho ' + escaparHtml(conta.label) + '</h2><span class="total">' + formatMoney(round(totais[ck])) + '</span></div>' +
-        (cartUrl ? '<a class="botao primario" style="margin:8px 0" href="' + cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
-        ' <button class="botao mini" data-registrar="' + ck + '">Registrar compra</button>' +
-        '<p class="sub-titulo">Minhas Ofertas</p>' +
-        (ofertas.length ? ofertas.map(linhaCompraHtml).join('') : '<p class="vazio">Nenhuma.</p>') +
-        '<p class="sub-titulo">Outros itens</p>' +
-        (outros.length ? outros.map(linhaCompraHtml).join('') : '<p class="vazio">Nenhum.</p>') +
+        '<div class="cabecalho-conta"><h2 style="margin:0">Carrinho ' + escaparHtml(conta.label) + '</h2><span class="total">' + formatMoney(round(res.totais[ck])) + '</span></div>' +
+        (cartUrl ? '<a class="botao primario" style="margin:8px 0 4px" href="' + cartUrl + '" target="_blank">Abrir carrinho no Zona Sul</a>' : '') +
+        '<div class="subsecao"><p class="rot">Minhas Ofertas</p>' +
+        (g.ofertas.length ? g.ofertas.map(function (i) { return linhaCompraHtml(i, ck); }).join('') : '<p class="vazio">Nenhuma.</p>') + '</div>' +
+        '<div class="subsecao"><p class="rot">Outros itens</p>' +
+        (g.outros.length ? g.outros.map(function (i) { return linhaCompraHtml(i, ck); }).join('') : '<p class="vazio">Nenhum.</p>') + '</div>' +
         '</div>';
     }).join('') + '</div>';
 
     document.getElementById('carrinhos').innerHTML = html;
-    estado.comprarPorConta = { oferta: ofertaPorConta, normal: normalPorConta };
     document.querySelectorAll('#carrinhos [data-abrir]').forEach(function (el) {
       el.addEventListener('click', function () {
         var i = estado.resultado.itens.find(function (x) { return x.key === el.dataset.abrir; });
         if (i && i.selecionado) abrirNoZonaSul(i.selecionado.link, i.nome);
       });
     });
-    document.querySelectorAll('#carrinhos [data-registrar]').forEach(function (b) {
-      b.addEventListener('click', function () { registrarCompra(b.dataset.registrar); });
+    document.querySelectorAll('#carrinhos [data-mover-conta]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); moverConta(b.dataset.moverConta, b.dataset.atual); });
     });
   }
 
-  function linhaCompraHtml(i) {
+  function linhaCompraHtml(i, contaAtual) {
     var s = i.selecionado;
-    return '<div class="linha-item" data-abrir="' + i.key + '">' + miniaturaHtml(s.imagem, true) +
-      '<div class="info-item"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
-      '<p class="preco">' + i.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div></div>';
+    return '<div class="linha-item">' + miniaturaHtml(s.imagem, true) +
+      '<div class="info-item" data-abrir="' + i.key + '" style="cursor:pointer"><p class="nome">' + escaparHtml(s.nome) + '</p>' +
+      '<p class="preco">' + i.quantidade + '× ' + formatMoney(s.preco) + ' &middot; ' + formatMoney(s.total) + '</p></div>' +
+      '<button class="botao-x" data-mover-conta="' + i.key + '" data-atual="' + contaAtual + '" title="Mover para o outro carrinho"><i class="ti ti-transfer"></i></button></div>';
   }
 
-  function registrarCompra(contaKey) {
-    var oferta = (estado.comprarPorConta.oferta[contaKey] || []);
-    var normal = (estado.comprarPorConta.normal[contaKey] || []);
-    var lista = oferta.concat(normal);
-    if (!lista.length) { alert('Nenhum item nesta conta.'); return; }
-    var itens = lista.map(function (i) {
-      return { key: i.key, nome: i.selecionado.nome, sku: i.selecionado.sku, precoPago: i.selecionado.preco, quantidade: i.quantidade };
+  function moverConta(key, atual) {
+    var outras = estado.contas.map(function (c) { return c.key; }).filter(function (k) { return k !== atual; });
+    if (!outras.length) return;
+    estado.overridesConta[key] = outras[0];
+    renderComprar();
+  }
+
+  function gravarUltimoCarrinho() {
+    if (!estado.agregado) { alert('Faça a checagem de preço primeiro.'); return; }
+    var itens = estado.resultado.itens.filter(function (i) { return i.selecionado; }).map(function (i) {
+      return { key: i.key, nome: i.nome, segmento: i.segmento, quantidade: i.quantidade, precoReferencia: i.precoReferencia, selecionado: i.selecionado };
     });
-    if (!confirm('Registrar ' + itens.length + ' item(ns) desta conta como comprados, com o preço da última cotação?')) return;
-    google.script.run.withSuccessHandler(function () {
-      alert('Compra registrada. Os preços de referência foram atualizados.');
+    var payload = { itens: itens, overridesOferta: estado.overridesOferta, overridesConta: estado.overridesConta };
+    var b = document.getElementById('botao-gravar-carrinho');
+    b.disabled = true; b.textContent = 'Gravando...';
+    google.script.run.withSuccessHandler(function (r) {
+      b.disabled = false; b.textContent = 'Gravar carrinho';
+      estado.ultimoCarrinhoData = r.data; renderUltimoBotao();
+      alert('Último carrinho gravado.');
+    }).withFailureHandler(function () {
+      b.disabled = false; b.textContent = 'Gravar carrinho'; alert('Não consegui gravar agora.');
+    }).gravarUltimoCarrinho(payload);
+  }
+
+  function atualizarBase() {
+    if (!estado.agregado) { alert('Faça a checagem de preço primeiro.'); return; }
+    var itens = estado.resultado.itens.filter(function (i) { return i.selecionado; }).map(function (i) {
+      return { key: i.key, nome: i.selecionado.nome, preco: i.selecionado.preco, quantidade: i.quantidade };
+    });
+    if (!confirm('Atualizar o preço de referência de ' + itens.length + ' itens da Lista Recorrente com os preços cotados agora? O histórico anterior fica guardado.')) return;
+    var b = document.getElementById('botao-atualizar-base');
+    b.disabled = true; b.textContent = 'Atualizando...';
+    google.script.run.withSuccessHandler(function (r) {
+      b.disabled = false; b.textContent = 'Atualizar base de preços';
+      alert(r.atualizados + ' itens atualizados na base. Histórico guardado com a data.');
       carregar();
-    }).withFailureHandler(function (erro) {
-      alert(erro.message || 'Não consegui registrar a compra.');
-    }).concluirCompra({ conta: contaKey, itens: itens });
+    }).withFailureHandler(function () {
+      b.disabled = false; b.textContent = 'Atualizar base de preços'; alert('Não consegui atualizar agora.');
+    }).atualizarBasePrecos(itens);
   }
 
   function escolherConta(item, totais) {

@@ -39,6 +39,12 @@ const COLUNAS_LOG = [
   'Data', 'Origem', 'QtdItens', 'Total', 'Resumo',
 ];
 
+const ABA_ULTIMO = 'UltimoCarrinho';
+const COLUNAS_ULTIMO = ['Data', 'Payload'];
+
+const ABA_HIST = 'HistoricoPrecos';
+const COLUNAS_HIST = ['Data', 'ItemKey', 'Nome', 'Preco', 'Quantidade'];
+
 function doGet() {
   return HtmlService.createTemplateFromFile('App')
     .evaluate()
@@ -57,6 +63,8 @@ function configurarPlanilha() {
   criarAbaSeNaoExiste(planilha, ABA_ITENS, COLUNAS_ITENS);
   criarAbaSeNaoExiste(planilha, ABA_COMPRAS, COLUNAS_COMPRAS);
   criarAbaSeNaoExiste(planilha, ABA_LOG, COLUNAS_LOG);
+  criarAbaSeNaoExiste(planilha, ABA_ULTIMO, COLUNAS_ULTIMO);
+  criarAbaSeNaoExiste(planilha, ABA_HIST, COLUNAS_HIST);
 }
 
 function criarAbaSeNaoExiste(planilha, nome, cabecalho) {
@@ -82,8 +90,71 @@ function obterEstadoInicial() {
     accountUrl: ACCOUNT_URL,
     cartBase: CART_BASE,
     segmentos: SEGMENTOS,
-    logCarrinho: listarLogCarrinho(),
+    ultimoCarrinhoData: obterUltimoCarrinhoData(),
   };
+}
+
+// ---------- Último Carrinho (snapshot remontável, gravado na fase Comprar) ----------
+
+function obterUltimoCarrinhoData() {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  const aba = planilha.getSheetByName(ABA_ULTIMO);
+  if (!aba || aba.getLastRow() < 2) return '';
+  return formatarDataHora_(aba.getRange(2, 1).getValue());
+}
+
+function obterUltimoCarrinho() {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  const aba = planilha.getSheetByName(ABA_ULTIMO);
+  if (!aba || aba.getLastRow() < 2) return null;
+  const data = formatarDataHora_(aba.getRange(2, 1).getValue());
+  let payload = {};
+  try { payload = JSON.parse(aba.getRange(2, 2).getValue()); } catch (e) { payload = {}; }
+  return {
+    data: data,
+    itens: payload.itens || [],
+    overridesOferta: payload.overridesOferta || {},
+    overridesConta: payload.overridesConta || {},
+  };
+}
+
+function gravarUltimoCarrinho(payload) {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  criarAbaSeNaoExiste(planilha, ABA_ULTIMO, COLUNAS_ULTIMO);
+  const aba = planilha.getSheetByName(ABA_ULTIMO);
+  const agora = new Date();
+  aba.getRange(2, 1, 1, 2).setValues([[agora, JSON.stringify(payload || {})]]);
+  return { ok: true, data: formatarDataHora_(agora) };
+}
+
+// Atualiza o preço de referência na Lista Recorrente com o preço cotado na compra
+// e guarda o preço com a data no HistoricoPrecos (não joga fora o histórico).
+function atualizarBasePrecos(itens) {
+  const planilha = SpreadsheetApp.getActiveSpreadsheet();
+  criarAbaSeNaoExiste(planilha, ABA_HIST, COLUNAS_HIST);
+  const abaHist = planilha.getSheetByName(ABA_HIST);
+  const abaItens = planilha.getSheetByName(ABA_ITENS);
+  const linhas = lerLinhasItens_();
+  const agora = new Date();
+  const hoje = Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd');
+  let atualizados = 0;
+
+  (itens || []).forEach((item) => {
+    if (item.preco == null) return;
+    abaHist.appendRow([agora, item.key, item.nome || '', arredondar_(item.preco), Number(item.quantidade) || 1]);
+    const indice = linhas.findIndex((l) => l.Key === item.key);
+    if (indice >= 0) {
+      const linhaPlanilha = indice + 2;
+      abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('PrecoReferencia') + 1).setValue(arredondar_(item.preco));
+      if (item.quantidade) {
+        abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('QuantidadeTipica') + 1).setValue(Number(item.quantidade));
+      }
+      abaItens.getRange(linhaPlanilha, COLUNAS_ITENS.indexOf('DataUltimaCompra') + 1).setValue(hoje);
+      atualizados += 1;
+    }
+  });
+
+  return { ok: true, atualizados };
 }
 
 // ---------- Log de carrinho (histórico de listas/carrinhos gravados) ----------
